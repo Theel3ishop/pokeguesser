@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess the Pokémon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+    font-family: 'Press Start 2P', cursive;
+    text-align: center;
+    background-color: #f0f8ff;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto; /* Allows vertical scrolling */
+    height: 100vh; /* Ensures the body takes full height of the screen */
+    margin: 0;
+}
+
+/* Header */
+h1 {
+    background-color: #ff0000;
+    color: #ffffff;
+    padding: 20px;
+    margin: 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 100vh; /* Restrict the container's height to viewport */
+    overflow-y: auto;
+}
+
+/* Main container */
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Results section */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+/* Individual result box */
+.result-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #ddd;
+    padding: 10px;
+    width: 80%;
+    max-width: 800px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.result-box img {
+    width: clamp(30px, 5vw, 50px); /* Adjust size based on screen */
+    height: auto;
+    margin-right: 10px;
+}
+
+.result-box span {
+    flex-grow: 2; /* Gives each column a balanced width */
+    text-align: center;
+    padding: 5px;
+    border-right: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap; /* Prevents wrapping */
+    overflow: hidden; /* Prevents text from overflowing */
+    text-overflow: ellipsis; /* Adds "..." if text is too long */
+    font-size: clamp(12px, 1.2vw, 16px); /* Shrinks text on small screens */
+    font-weight: bold; /* Keep it readable */
+}
+
+.result-box span.name {
+    flex-grow: 3; /* Give the name box more space */
+}
+
+.result-box span:last-child {
+    border-right: none;
+}
+
+/* Guess input field */
+#guessInput {
+    width: 100%;
+    max-width: 300px;
+    height: 40px;
+    font-size: 16px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+/* Guess button */
+#guessButton {
+    height: 50px;
+    font-size: 16px;
+    padding: 10px 20px;
+    background-color: #2a75bb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#guessButton:hover {
+    background-color: #1a4a7a;
+}
+
+/* Match indicators */
+.match {
+    border: 2px solid green;
+    background-color: lightgreen;
+    padding: 5px;
+    border-radius: 5px;
+    display: block;
+    height: 100%;
+}
+
+.close-match, .weakness-match {
+    border: 2px solid yellow;
+    background-color: yellow;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.guessed-weakness-match {
+    border: 2px solid red;
+    background-color: red;
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+/* Input container */
+.input-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap; /* Allow elements to wrap on small screens */
+    margin-bottom: 20px;
+    gap: 10px; /* Add space between elements */
+}
+
+/* Guess tracker */
+.guess-tracker {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Overlay */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    overflow-y: auto; /* Let the entire page scroll if needed */
+    padding: 60px 10px 40px; /* Add top padding to prevent clipping */
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: flex-start; /* Align content to top */
+}
+
+/* Overlay content */
+.overlay-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    box-sizing: border-box;
+
+    /* Make it responsive and allow it to grow */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow: visible;
+    word-wrap: break-word;
+}
+/* Rules button */
+#rulesButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+#rulesButton:hover {
+    text-decoration: underline;
+}
+
+/* Overlay image */
+.overlay-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 15px auto;
+    border-radius: 8px;
+}
+
+/* Close button */
+.close-button {
+    align-self: flex-end;
+    color: red !important;
+    background: none !important;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+}
+
+.close-button:hover {
+    color: red !important;
+    background: none !important;
+    outline: none;
+}
+.match, 
+.close-match, 
+.weakness-match, 
+.guessed-weakness-match {
+    padding: 2px 4px; /* Reduce padding to make boxes smaller */
+    border-radius: 4px; /* Slightly smaller rounded edges */
+    display: inline-flex; /* Keeps box size based on content */
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(10px, 1.2vw, 14px); /* Adjust text size dynamically */
+    height: auto; /* Prevents unnecessary stretching */
+    min-width: 40px; /* Ensures minimum width for small screens */
+}
+
+
+/* === Responsive Adjustments === */
+@media (max-width: 768px) {
+    /* Adjust text sizes for better readability */
+    body {
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 18px;
+        padding: 15px;
+    }
+
+    /* Center and resize input and button */
+    .input-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #guessInput {
+        width: 90%;
+        font-size: 14px;
+    }
+
+    #guessButton {
+        width: 90%;
+        font-size: 14px;
+        height: 45px;
+    }
+
+    /* Make result boxes stack properly */
+    .result-box {
+        width: 95%;
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .result-box img {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 5px;
+    }
+
+    .result-box span {
+        flex: none;
+        width: 100%;
+        padding: 5px;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .result-box span:last-child {
+        border-bottom: none;
+    }
+
+    .overlay-content {
+        margin: 40px auto; /* Slightly smaller top margin for very small screens */
+    }
+    .overlay {
+        top: 100px !important;
+        transform: translateY(0) !important;
+    }
+
+    /* Smaller close button */
+    .close-button {
+        font-size: 20px;
+        width: 25px;
+        height: 25px;
+    }
+}
+
+
+
+    </style>
+</head>
+<body>
+
+    <h1>PokéGuesser</h1>
+    <button id="rulesButton" style="position: absolute; top: 10px; right: 10px;">Rules</button>
+    <div class="container">
+        <div class="input-container">
+            <div class="guess-tracker" id="guessTracker">Guesses Left: 8</div>
+            <input type="text" id="guessInput" list="pokemonSuggestions" placeholder="Enter Pokémon name" autocomplete="off">
+            <button id="guessButton" onclick="makeGuess()">Submit</button>
+            <datalist id="pokemonSuggestions">
+                <!-- Options will be populated by JavaScript -->
+            </datalist>
+        </div>
+        <div class="results-container" id="results"></div>
+    </div>
+
+    <!-- Rules Overlay -->
+    <div id="rulesOverlay" class="overlay">
+        <div class="overlay-content">
+            <button class="close-button" onclick="closeOverlay('rulesOverlay')">X</button>
+            <h2>How to Play PokéGuesser</h2>
+            <p>1. You have 8 guesses to guess the correct Pokémon.</p>
+            <p>2. Each guess gives you hints on how close you are to guessing the correct Pokémon.</p>
+            <p>3. If the Pokémon you guessed has the same attributes as the correct Pokémon, the attribute box will turn green.</p>
+            <div class="match" style="display: inline-block; padding: 10px;">
+                <img src="https://media.tenor.com/Pp1BK6m_bXUAAAAe/grass-type-pokemon-logo.png" 
+                     alt="Example Attribute Match" 
+                     style="width: 80px; height: auto;">
+            </div>
+            <p>4. If the Pokémon you guessed had an attribute that is close or a type that is weak to the correct Pokémon, the box will be yellow.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 50px;">
+                <div style="text-align: center;">
+                    <p>Your Guess:</p>
+                    <div class="close-match" style="display: inline-block; padding: 10px; border: 2px solid yellow; background-color: yellow; border-radius: 5px;">
+                        <img src="https://media.tenor.com/U3fdIlx3GdgAAAAe/fire-type-pokemon-logo.png" 
+                             alt="Grass Type Example" 
+                             style="width: 80px; height: auto;">
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <p>Correct Attribute:</p>
+                    <div class="match" style="display: inline-block; padding: 10px; border: 2px solid green; background-color: lightgreen; border-radius: 5px;">
+                        <img src="https://media.tenor.com/gd7g1xIIWQkAAAAe/water-type-pokemon-logo.png" 
+                             alt="Water Type Example" 
+                             style="width: 80px; height: auto;">
+                    </div>
+                </div>
+            </div>
+            <p>5. If the Pokémon you guessed type is strong against the correct Pokémon, the box will be red.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 50px;">
+                <div style="text-align: center;">
+                    <p>Your Guess:</p>
+                    <div class="guessed-wrong" style="display: inline-block; padding: 10px; border: 2px solid red; background-color: red; border-radius: 5px;">
+                        <img src="https://media.tenor.com/Pp1BK6m_bXUAAAAe/grass-type-pokemon-logo.png" 
+                             alt="Grass Type Example" 
+                             style="width: 80px; height: auto;">
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <p>Correct Attribute:</p>
+                    <div class="match" style="display: inline-block; padding: 10px; border: 2px solid green; background-color: lightgreen; border-radius: 5px;">
+                        <img src="https://media.tenor.com/gd7g1xIIWQkAAAAe/water-type-pokemon-logo.png" 
+                             alt="Water Type Example" 
+                             style="width: 80px; height: auto;">
+                    </div>
+                </div>
+            </div>
+            <p>6. The correct Pokémon changes every day.</p>
+        </div>
+    </div>
+    
+    <div id="endgameOverlay" class="overlay">
+        <div class="overlay-content">
+            <button class="close-button" onclick="closeOverlay('endgameOverlay')">X</button>
+            <h2 id="endgameMessage"></h2>
+            <p id="correctPokemon"></p>
+            <img id="resultImage" style="max-width: 300px; width: 100%; height: auto; display: block; margin: 15px auto;" alt="Result Image">
+        </div>
+    </div>
+
+    <script>
+        class Pokemon {
+            constructor(name, type1, type2, gen, evolution, height, weight, image, pokedexNumber) {
+                this.name = name;
+                this.type1 = type1;
+                this.type2 = type2;
+                this.gen = gen;
+                this.evolution = evolution;
+                this.height = height;
+                this.weight = weight;
+                this.image = image;
+                this.pokedexNumber = pokedexNumber;
+            }
+        }
+        const typeWeaknesses = {
+    Fire: ["Water", "Rock", "Ground"],
+    Water: ["Electric", "Grass"],
+    Grass: ["Fire", "Ice", "Poison", "Flying", "Bug"],
+    Electric: ["Ground"],
+    Rock: ["Water", "Grass", "Fighting", "Ground", "Steel"],
+    Ground: ["Water", "Grass", "Ice"],
+    Flying: ["Electric", "Ice", "Rock"],
+    Poison: ["Ground", "Psychic"],
+    Bug: ["Fire", "Flying", "Rock"],
+    Psychic: ["Bug", "Ghost", "Dark"],
+    Ice: ["Fire", "Fighting", "Rock", "Steel"],
+    Dragon: ["Ice", "Dragon", "Fairy"],
+    Dark: ["Fighting", "Bug", "Fairy"],
+    Steel: ["Fire", "Fighting", "Ground"],
+    Fairy: ["Poison", "Steel"],
+    Ghost: ["Ghost", "Dark"],
+    Fighting: ["Flying", "Psychic", "Fairy"],
+    Normal: ["Fighting"] // Added Normal type weaknesses
+};
+
+const pokemonList = [
+    new Pokemon("Bulbasaur", "Grass", "Poison", 1, "first", 0.7, 6.9, "https://archives.bulbagarden.net/media/upload/thumb/f/fb/0001Bulbasaur.png/800px-0001Bulbasaur.png", 1),
+    new Pokemon("Ivysaur", "Grass", "Poison", 1, "second", 1.0, 13.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/002.png", 2),
+    new Pokemon("Venusaur", "Grass", "Poison", 1, "third", 2.0, 100.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/003.png", 3),
+    new Pokemon("Charmander", "Fire", null, 1, "first", 0.6, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/004.png", 4),
+    new Pokemon("Charmeleon", "Fire", null, 1, "second", 1.1, 19.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/005.png", 5),
+    new Pokemon("Charizard", "Fire", "Flying", 1, "third", 1.7, 90.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/006.png", 6),
+    new Pokemon("Squirtle", "Water", null, 1, "first", 0.5, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/007.png", 7),
+    new Pokemon("Wartortle", "Water", null, 1, "second", 1.0, 22.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/008.png", 8),
+    new Pokemon("Blastoise", "Water", null, 1, "third", 1.6, 85.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/009.png", 9),
+    new Pokemon("Caterpie", "Bug", null, 1, "first", 0.3, 2.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/010.png", 10),
+    new Pokemon("Metapod", "Bug", null, 1, "second", 0.7, 9.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/011.png", 11),
+    new Pokemon("Butterfree", "Bug", "Flying", 1, "third", 1.1, 32.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/012.png", 12),
+    new Pokemon("Weedle", "Bug", "Poison", 1, "first", 0.3, 3.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/013.png", 13),
+    new Pokemon("Kakuna", "Bug", "Poison", 1, "second", 0.6, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/014.png", 14),
+    new Pokemon("Beedrill", "Bug", "Poison", 1, "third", 1.0, 29.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/015.png", 15),
+    new Pokemon("Pidgey", "Normal", "Flying", 1, "first", 0.3, 1.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/016.png", 16),
+    new Pokemon("Pidgeotto", "Normal", "Flying", 1, "second", 1.1, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/017.png", 17),
+    new Pokemon("Pidgeot", "Normal", "Flying", 1, "third", 1.5, 39.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/018.png", 18),
+    new Pokemon("Rattata", "Normal", null, 1, "first", 0.3, 3.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/019.png", 19),
+    new Pokemon("Raticate", "Normal", null, 1, "second", 0.7, 18.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/020.png", 20),
+    new Pokemon("Spearow", "Normal", "Flying", 1, "first", 0.3, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/021.png", 21),
+    new Pokemon("Fearow", "Normal", "Flying", 1, "second", 1.2, 38.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/022.png", 22),
+    new Pokemon("Ekans", "Poison", null, 1, "first", 2.0, 6.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/023.png", 23),
+    new Pokemon("Arbok", "Poison", null, 1, "second", 3.5, 65.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/024.png", 24),
+    new Pokemon("Pikachu", "Electric", null, 1, "first", 0.4, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/025.png", 25),
+    new Pokemon("Raichu", "Electric", null, 1, "second", 0.8, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/026.png", 26),
+    new Pokemon("Sandshrew", "Ground", null, 1, "first", 0.6, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/027.png", 27),
+    new Pokemon("Sandslash", "Ground", null, 1, "second", 1.0, 29.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/028.png", 28),
+    new Pokemon("Nidoran♀", "Poison", null, 1, "first", 0.4, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/029.png", 29),
+    new Pokemon("Nidorina", "Poison", null, 1, "second", 0.8, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/030.png", 30),
+    new Pokemon("Nidoqueen", "Poison", "Ground", 1, "third", 1.3, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/031.png", 31),
+    new Pokemon("Nidoran♂", "Poison", null, 1, "first", 0.5, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/032.png", 32),
+    new Pokemon("Nidorino", "Poison", null, 1, "second", 0.9, 19.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/033.png", 33),
+    new Pokemon("Nidoking", "Poison", "Ground", 1, "third", 1.4, 62.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/034.png", 34),
+    new Pokemon("Clefairy", "Fairy", null, 1, "first", 0.6, 7.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/035.png", 35),
+    new Pokemon("Clefable", "Fairy", null, 1, "second", 1.3, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/036.png", 36),
+    new Pokemon("Vulpix", "Fire", null, 1, "first", 0.6, 9.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/037.png", 37),
+    new Pokemon("Ninetales", "Fire", null, 1, "second", 1.1, 19.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/038.png", 38),
+    new Pokemon("Jigglypuff", "Normal", "Fairy", 1, "first", 0.5, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/039.png", 39),
+    new Pokemon("Wigglytuff", "Normal", "Fairy", 1, "second", 1.0, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/040.png", 40),
+    new Pokemon("Zubat", "Poison", "Flying", 1, "first", 0.8, 7.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/041.png", 41),
+    new Pokemon("Golbat", "Poison", "Flying", 1, "second", 1.6, 55.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/042.png", 42),
+    new Pokemon("Oddish", "Grass", "Poison", 1, "first", 0.5, 5.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/043.png", 43),
+    new Pokemon("Gloom", "Grass", "Poison", 1, "second", 0.8, 8.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/044.png", 44),
+    new Pokemon("Vileplume", "Grass", "Poison", 1, "third", 1.2, 18.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/045.png", 45),
+    new Pokemon("Paras", "Bug", "Grass", 1, "first", 0.3, 5.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/046.png", 46),
+    new Pokemon("Parasect", "Bug", "Grass", 1, "second", 1.0, 29.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/047.png", 47),
+    new Pokemon("Venonat", "Bug", "Poison", 1, "first", 1.0, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/048.png", 48),
+    new Pokemon("Venomoth", "Bug", "Poison", 1, "second", 1.5, 12.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/049.png", 49),
+    new Pokemon("Diglett", "Ground", null, 1, "first", 0.2, 0.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/050.png", 50),
+    new Pokemon("Dugtrio", "Ground", null, 1, "second", 0.7, 33.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/051.png", 51),
+    new Pokemon("Meowth", "Normal", null, 1, "first", 0.4, 4.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/052.png", 52),
+    new Pokemon("Persian", "Normal", null, 1, "second", 1.0, 32.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/053.png", 53),
+    new Pokemon("Psyduck", "Water", null, 1, "first", 0.8, 19.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/054.png", 54),
+    new Pokemon("Golduck", "Water", null, 1, "second", 1.7, 76.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/055.png", 55),
+    new Pokemon("Mankey", "Fighting", null, 1, "first", 0.5, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/056.png", 56),
+    new Pokemon("Primeape", "Fighting", null, 1, "second", 1.0, 32.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/057.png", 57),
+    new Pokemon("Growlithe", "Fire", null, 1, "first", 0.7, 19.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/058.png", 58),
+    new Pokemon("Arcanine", "Fire", null, 1, "second", 1.9, 155.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/059.png", 59),
+    new Pokemon("Poliwag", "Water", null, 1, "first", 0.6, 12.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/060.png", 60),
+    new Pokemon("Poliwhirl", "Water", null, 1, "second", 1.0, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/061.png", 61),
+    new Pokemon("Poliwrath", "Water", "Fighting", 1, "third", 1.3, 54.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/062.png", 62),
+    new Pokemon("Abra", "Psychic", null, 1, "first", 0.9, 19.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/063.png", 63),
+    new Pokemon("Kadabra", "Psychic", null, 1, "second", 1.3, 56.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/064.png", 64),
+    new Pokemon("Alakazam", "Psychic", null, 1, "third", 1.5, 48.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/065.png", 65),
+    new Pokemon("Machop", "Fighting", null, 1, "first", 0.8, 19.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/066.png", 66),
+    new Pokemon("Machoke", "Fighting", null, 1, "second", 1.5, 70.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/067.png", 67),
+    new Pokemon("Machamp", "Fighting", null, 1, "third", 1.6, 130.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/068.png", 68),
+    new Pokemon("Bellsprout", "Grass", "Poison", 1, "first", 0.7, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/069.png", 69),
+    new Pokemon("Weepinbell", "Grass", "Poison", 1, "second", 1.0, 6.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/070.png", 70),
+    new Pokemon("Victreebel", "Grass", "Poison", 1, "third", 1.7, 15.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/071.png", 71),
+    new Pokemon("Tentacool", "Water", "Poison", 1, "first", 0.9, 45.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/072.png", 72),
+    new Pokemon("Tentacruel", "Water", "Poison", 1, "second", 1.6, 55.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/073.png", 73),
+    new Pokemon("Geodude", "Rock", "Ground", 1, "first", 0.4, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/074.png", 74),
+    new Pokemon("Graveler", "Rock", "Ground", 1, "second", 1.0, 105.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/075.png", 75),
+    new Pokemon("Golem", "Rock", "Ground", 1, "third", 1.4, 300.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/076.png", 76),
+    new Pokemon("Ponyta", "Fire", null, 1, "first", 1.0, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/077.png", 77),
+    new Pokemon("Rapidash", "Fire", null, 1, "second", 1.7, 95.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/078.png", 78),
+    new Pokemon("Slowpoke", "Water", "Psychic", 1, "first", 1.2, 36.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/079.png", 79),
+    new Pokemon("Slowbro", "Water", "Psychic", 1, "second", 1.6, 78.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/080.png", 80),
+    new Pokemon("Magnemite", "Electric", "Steel", 1, "first", 0.3, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/081.png", 81),
+    new Pokemon("Magneton", "Electric", "Steel", 1, "second", 1.0, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/082.png", 82),
+    new Pokemon("Farfetch'd", "Normal", "Flying", 1, "first", 0.8, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/083.png", 83),
+    new Pokemon("Doduo", "Normal", "Flying", 1, "first", 1.4, 39.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/084.png", 84),
+    new Pokemon("Dodrio", "Normal", "Flying", 1, "second", 1.8, 85.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/085.png", 85),
+    new Pokemon("Seel", "Water", null, 1, "first", 1.1, 90.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/086.png", 86),
+    new Pokemon("Dewgong", "Water", "Ice", 1, "second", 1.7, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/087.png", 87),
+    new Pokemon("Grimer", "Poison", null, 1, "first", 0.9, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/088.png", 88),
+    new Pokemon("Muk", "Poison", null, 1, "second", 1.2, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/089.png", 89),
+    new Pokemon("Shellder", "Water", null, 1, "first", 0.3, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/090.png", 90),
+    new Pokemon("Cloyster", "Water", "Ice", 1, "second", 1.5, 132.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/091.png", 91),
+    new Pokemon("Gastly", "Ghost", "Poison", 1, "first", 1.3, 0.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/092.png", 92),
+    new Pokemon("Haunter", "Ghost", "Poison", 1, "second", 1.6, 0.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/093.png", 93),
+    new Pokemon("Gengar", "Ghost", "Poison", 1, "third", 1.5, 40.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/094.png", 94),
+    new Pokemon("Onix", "Rock", "Ground", 1, "first", 8.8, 210.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/095.png", 95),
+    new Pokemon("Drowzee", "Psychic", null, 1, "first", 1.0, 32.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/096.png", 96),
+    new Pokemon("Hypno", "Psychic", null, 1, "second", 1.6, 75.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/097.png", 97),
+    new Pokemon("Krabby", "Water", null, 1, "first", 0.4, 6.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/098.png", 98),
+    new Pokemon("Kingler", "Water", null, 1, "second", 1.3, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/099.png", 99),
+    new Pokemon("Voltorb", "Electric", null, 1, "first", 0.5, 10.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/100.png", 100),
+    new Pokemon("Electrode", "Electric", null, 1, "second", 1.2, 66.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/101.png", 101),
+    new Pokemon("Exeggcute", "Grass", "Psychic", 1, "first", 0.4, 2.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/102.png", 102),
+    new Pokemon("Exeggutor", "Grass", "Psychic", 1, "second", 2.0, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/103.png", 103),
+    new Pokemon("Cubone", "Ground", null, 1, "first", 0.4, 6.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/104.png", 104),
+    new Pokemon("Marowak", "Ground", null, 1, "second", 1.0, 45.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/105.png", 105),
+    new Pokemon("Hitmonlee", "Fighting", null, 1, "first", 1.5, 49.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/106.png", 106),
+    new Pokemon("Hitmonchan", "Fighting", null, 1, "first", 1.4, 50.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/107.png", 107),
+    new Pokemon("Lickitung", "Normal", null, 1, "first", 1.2, 65.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/108.png", 108),
+    new Pokemon("Koffing", "Poison", null, 1, "first", 0.6, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/109.png", 109),
+    new Pokemon("Weezing", "Poison", null, 1, "second", 1.2, 9.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/110.png", 110),
+    new Pokemon("Rhyhorn", "Ground", "Rock", 1, "first", 1.0, 115.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/111.png", 111),
+    new Pokemon("Rhydon", "Ground", "Rock", 1, "second", 1.9, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/112.png", 112),
+    new Pokemon("Chansey", "Normal", null, 1, "first", 1.1, 34.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/113.png", 113),
+    new Pokemon("Tangela", "Grass", null, 1, "first", 1.0, 35.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/114.png", 114),
+    new Pokemon("Kangaskhan", "Normal", null, 1, "first", 2.2, 80.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/115.png", 115),
+    new Pokemon("Horsea", "Water", null, 1, "first", 0.4, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/116.png", 116),
+    new Pokemon("Seadra", "Water", null, 1, "second", 1.2, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/117.png", 117),
+    new Pokemon("Goldeen", "Water", null, 1, "first", 0.6, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/118.png", 118),
+    new Pokemon("Seaking", "Water", null, 1, "second", 1.3, 39.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/119.png", 119),
+    new Pokemon("Staryu", "Water", null, 1, "first", 0.8, 34.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/120.png", 120),
+    new Pokemon("Starmie", "Water", "Psychic", 1, "second", 1.1, 80.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/121.png", 121),
+    new Pokemon("Mr. Mime", "Psychic", "Fairy", 1, "first", 1.3, 54.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/122.png", 122),
+    new Pokemon("Scyther", "Bug", "Flying", 1, "first", 1.5, 56.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/123.png", 123),
+    new Pokemon("Jynx", "Ice", "Psychic", 1, "first", 1.4, 40.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/124.png", 124),
+    new Pokemon("Electabuzz", "Electric", null, 1, "first", 1.1, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/125.png", 125),
+    new Pokemon("Magmar", "Fire", null, 1, "first", 1.3, 44.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/126.png", 126),
+    new Pokemon("Pinsir", "Bug", null, 1, "first", 1.5, 55.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/127.png", 127),
+    new Pokemon("Tauros", "Normal", null, 1, "first", 1.4, 88.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/128.png", 128),
+    new Pokemon("Magikarp", "Water", null, 1, "first", 0.9, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/129.png", 129),
+    new Pokemon("Gyarados", "Water", "Flying", 1, "second", 6.5, 235.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/130.png", 130),
+    new Pokemon("Lapras", "Water", "Ice", 1, "first", 2.5, 220.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/131.png", 131),
+    new Pokemon("Ditto", "Normal", null, 1, "first", 0.3, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/132.png", 132),
+    new Pokemon("Eevee", "Normal", null, 1, "first", 0.3, 6.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/133.png", 133),
+    new Pokemon("Vaporeon", "Water", null, 1, "second", 1.0, 29.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/134.png", 134),
+    new Pokemon("Jolteon", "Electric", null, 1, "second", 0.8, 24.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/135.png", 135),
+    new Pokemon("Flareon", "Fire", null, 1, "second", 0.9, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/136.png", 136),
+    new Pokemon("Porygon", "Normal", null, 1, "first", 0.8, 36.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/137.png", 137),
+    new Pokemon("Omanyte", "Rock", "Water", 1, "first", 0.4, 7.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/138.png", 138),
+    new Pokemon("Omastar", "Rock", "Water", 1, "second", 1.0, 35.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/139.png", 139),
+    new Pokemon("Kabuto", "Rock", "Water", 1, "first", 0.5, 11.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/140.png", 140),
+    new Pokemon("Kabutops", "Rock", "Water", 1, "second", 1.3, 40.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/141.png", 141),
+    new Pokemon("Aerodactyl", "Rock", "Flying", 1, "first", 1.8, 59.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/142.png", 142),
+    new Pokemon("Snorlax", "Normal", null, 1, "first", 2.1, 460.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/143.png", 143),
+    new Pokemon("Articuno", "Ice", "Flying", 1, "first", 1.7, 55.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/144.png", 144),
+    new Pokemon("Zapdos", "Electric", "Flying", 1, "first", 1.6, 52.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/145.png", 145),
+    new Pokemon("Moltres", "Fire", "Flying", 1, "first", 2.0, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/146.png", 146),
+    new Pokemon("Dratini", "Dragon", null, 1, "first", 1.8, 3.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/147.png", 147),
+    new Pokemon("Dragonair", "Dragon", null, 1, "second", 4.0, 16.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/148.png", 148),
+    new Pokemon("Dragonite", "Dragon", "Flying", 1, "third", 2.2, 210.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/149.png", 149),
+    new Pokemon("Mewtwo", "Psychic", null, 1, "first", 2.0, 122.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/150.png", 150),
+    new Pokemon("Mew", "Psychic", null, 1, "first", 0.4, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/151.png", 151),
+    new Pokemon("Chikorita", "Grass", null, 2, "first", 0.9, 6.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/152.png", 152),
+    new Pokemon("Bayleef", "Grass", null, 2, "second", 1.2, 15.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/153.png", 153),
+    new Pokemon("Meganium", "Grass", null, 2, "third", 1.8, 100.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/154.png", 154),
+    new Pokemon("Cyndaquil", "Fire", null, 2, "first", 0.5, 7.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/155.png", 155),
+    new Pokemon("Quilava", "Fire", null, 2, "second", 0.9, 19.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/156.png", 156),
+    new Pokemon("Typhlosion", "Fire", null, 2, "third", 1.7, 79.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/157.png", 157),
+    new Pokemon("Totodile", "Water", null, 2, "first", 0.6, 9.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/158.png", 158),
+    new Pokemon("Croconaw", "Water", null, 2, "second", 1.1, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/159.png", 159),
+    new Pokemon("Feraligatr", "Water", null, 2, "third", 2.3, 88.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/160.png", 160),
+    new Pokemon("Sentret", "Normal", null, 2, "first", 0.8, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/161.png", 161),
+    new Pokemon("Furret", "Normal", null, 2, "second", 1.8, 32.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/162.png", 162),
+    new Pokemon("Hoothoot", "Normal", "Flying", 2, "first", 0.7, 21.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/163.png", 163),
+    new Pokemon("Noctowl", "Normal", "Flying", 2, "second", 1.6, 40.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/164.png", 164),
+    new Pokemon("Ledyba", "Bug", "Flying", 2, "first", 1.0, 10.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/165.png", 165),
+    new Pokemon("Ledian", "Bug", "Flying", 2, "second", 1.4, 35.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/166.png", 166),
+    new Pokemon("Spinarak", "Bug", "Poison", 2, "first", 0.5, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/167.png", 167),
+    new Pokemon("Ariados", "Bug", "Poison", 2, "second", 1.1, 33.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/168.png", 168),
+    new Pokemon("Crobat", "Poison", "Flying", 2, "third", 1.8, 75.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/169.png", 169),
+    new Pokemon("Chinchou", "Water", "Electric", 2, "first", 0.5, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/170.png", 170),
+    new Pokemon("Lanturn", "Water", "Electric", 2, "second", 1.2, 22.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/171.png", 171),
+    new Pokemon("Pichu", "Electric", null, 2, "first", 0.3, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/172.png", 172),
+    new Pokemon("Cleffa", "Fairy", null, 2, "first", 0.3, 3.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/173.png", 173),
+    new Pokemon("Igglybuff", "Normal", "Fairy", 2, "first", 0.3, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/174.png", 174),
+    new Pokemon("Togepi", "Fairy", null, 2, "first", 0.3, 1.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/175.png", 175),
+    new Pokemon("Togetic", "Fairy", "Flying", 2, "second", 0.6, 3.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/176.png", 176),
+    new Pokemon("Natu", "Psychic", "Flying", 2, "first", 0.2, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/177.png", 177),
+    new Pokemon("Xatu", "Psychic", "Flying", 2, "second", 1.5, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/178.png", 178),
+    new Pokemon("Mareep", "Electric", null, 2, "first", 0.6, 7.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/179.png", 179),
+    new Pokemon("Flaaffy", "Electric", null, 2, "second", 0.8, 13.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/180.png", 180),
+    new Pokemon("Ampharos", "Electric", null, 2, "third", 1.4, 61.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/181.png", 181),
+    new Pokemon("Bellossom", "Grass", null, 2, "third", 0.4, 5.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/182.png", 182),
+    new Pokemon("Marill", "Water", "Fairy", 2, "first", 0.4, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/183.png", 183),
+    new Pokemon("Azumarill", "Water", "Fairy", 2, "second", 0.8, 28.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/184.png", 184),
+    new Pokemon("Sudowoodo", "Rock", null, 2, "first", 1.2, 38.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/185.png", 185),
+    new Pokemon("Politoed", "Water", null, 2, "third", 1.1, 33.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/186.png", 186),
+    new Pokemon("Hoppip", "Grass", "Flying", 2, "first", 0.4, 0.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/187.png", 187),
+    new Pokemon("Skiploom", "Grass", "Flying", 2, "second", 0.6, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/188.png", 188),
+    new Pokemon("Jumpluff", "Grass", "Flying", 2, "third", 0.8, 3.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/189.png", 189),
+    new Pokemon("Aipom", "Normal", null, 2, "first", 0.8, 11.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/190.png", 190),
+    new Pokemon("Sunkern", "Grass", null, 2, "first", 0.3, 1.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/191.png", 191),
+    new Pokemon("Sunflora", "Grass", null, 2, "second", 0.8, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/192.png", 192),
+    new Pokemon("Yanma", "Bug", "Flying", 2, "first", 1.2, 38.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/193.png", 193),
+    new Pokemon("Wooper", "Water", "Ground", 2, "first", 0.4, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/194.png", 194),
+    new Pokemon("Quagsire", "Water", "Ground", 2, "second", 1.4, 75.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/195.png", 195),
+    new Pokemon("Espeon", "Psychic", null, 2, "second", 0.9, 26.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/196.png", 196),
+    new Pokemon("Umbreon", "Dark", null, 2, "second", 1.0, 27.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/197.png", 197),
+    new Pokemon("Murkrow", "Dark", "Flying", 2, "first", 0.5, 2.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/198.png", 198),
+    new Pokemon("Slowking", "Water", "Psychic", 2, "third", 2.0, 79.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/199.png", 199),
+    new Pokemon("Misdreavus", "Ghost", null, 2, "first", 0.7, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/200.png", 200),
+    new Pokemon("Unown", "Psychic", null, 2, "first", 0.5, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/201.png", 201),
+    new Pokemon("Wobbuffet", "Psychic", null, 2, "first", 1.3, 28.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/202.png", 202),
+    new Pokemon("Girafarig", "Normal", "Psychic", 2, "first", 1.5, 41.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/203.png", 203),
+    new Pokemon("Pineco", "Bug", null, 2, "first", 0.6, 7.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/204.png", 204),
+    new Pokemon("Forretress", "Bug", "Steel", 2, "second", 1.2, 125.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/205.png", 205),
+    new Pokemon("Dunsparce", "Normal", null, 2, "first", 1.5, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/206.png", 206),
+    new Pokemon("Gligar", "Ground", "Flying", 2, "first", 1.1, 64.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/207.png", 207),
+    new Pokemon("Steelix", "Steel", "Ground", 2, "second", 9.2, 400.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/208.png", 208),
+    new Pokemon("Snubbull", "Fairy", null, 2, "first", 0.6, 7.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/209.png", 209),
+    new Pokemon("Granbull", "Fairy", null, 2, "second", 1.4, 48.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/210.png", 210),
+    new Pokemon("Qwilfish", "Water", "Poison", 2, "first", 0.5, 3.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/211.png", 211),
+    new Pokemon("Scizor", "Bug", "Steel", 2, "second", 1.8, 118.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/212.png", 212),
+    new Pokemon("Shuckle", "Bug", "Rock", 2, "first", 0.6, 20.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/213.png", 213),
+    new Pokemon("Heracross", "Bug", "Fighting", 2, "first", 1.5, 54.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/214.png", 214),
+    new Pokemon("Sneasel", "Dark", "Ice", 2, "first", 0.9, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/215.png", 215),
+    new Pokemon("Teddiursa", "Normal", null, 2, "first", 0.6, 8.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/216.png", 216),
+    new Pokemon("Ursaring", "Normal", null, 2, "second", 1.8, 125.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/217.png", 217),
+    new Pokemon("Slugma", "Fire", null, 2, "first", 0.7, 35.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/218.png", 218),
+    new Pokemon("Magcargo", "Fire", "Rock", 2, "second", 0.8, 55.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/219.png", 219),
+    new Pokemon("Swinub", "Ice", "Ground", 2, "first", 0.4, 6.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/220.png", 220),
+    new Pokemon("Piloswine", "Ice", "Ground", 2, "second", 1.1, 55.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/221.png", 221),
+    new Pokemon("Corsola", "Water", "Rock", 2, "first", 0.6, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/222.png", 222),
+    new Pokemon("Remoraid", "Water", null, 2, "first", 0.6, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/223.png", 223),
+    new Pokemon("Octillery", "Water", null, 2, "second", 0.9, 28.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/224.png", 224),
+    new Pokemon("Delibird", "Ice", "Flying", 2, "first", 0.9, 16.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/225.png", 225),
+    new Pokemon("Mantine", "Water", "Flying", 2, "first", 2.1, 220.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/226.png", 226),
+    new Pokemon("Skarmory", "Steel", "Flying", 2, "first", 1.7, 50.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/227.png", 227),
+    new Pokemon("Houndour", "Dark", "Fire", 2, "first", 0.6, 10.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/228.png", 228),
+    new Pokemon("Houndoom", "Dark", "Fire", 2, "second", 1.4, 35.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/229.png", 229),
+    new Pokemon("Kingdra", "Water", "Dragon", 2, "third", 1.8, 152.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/230.png", 230),
+    new Pokemon("Phanpy", "Ground", null, 2, "first", 0.5, 33.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/231.png", 231),
+    new Pokemon("Donphan", "Ground", null, 2, "second", 1.1, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/232.png", 232),
+    new Pokemon("Porygon2", "Normal", null, 2, "second", 0.6, 32.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/233.png", 233),
+    new Pokemon("Stantler", "Normal", null, 2, "first", 1.4, 71.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/234.png", 234),
+    new Pokemon("Smeargle", "Normal", null, 2, "first", 1.2, 58.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/235.png", 235),
+    new Pokemon("Tyrogue", "Fighting", null, 2, "first", 0.7, 21.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/236.png", 236),
+    new Pokemon("Hitmontop", "Fighting", null, 2, "second", 1.4, 48.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/237.png", 237),
+    new Pokemon("Smoochum", "Ice", "Psychic", 2, "first", 0.4, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/238.png", 238),
+    new Pokemon("Elekid", "Electric", null, 2, "first", 0.6, 23.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/239.png", 239),
+    new Pokemon("Magby", "Fire", null, 2, "first", 0.7, 21.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/240.png", 240),
+    new Pokemon("Miltank", "Normal", null, 2, "first", 1.2, 75.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/241.png", 241),
+    new Pokemon("Blissey", "Normal", null, 2, "second", 1.5, 46.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/242.png", 242),
+    new Pokemon("Raikou", "Electric", null, 2, "first", 1.9, 178.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/243.png", 243),
+    new Pokemon("Entei", "Fire", null, 2, "first", 2.1, 198.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/244.png", 244),
+    new Pokemon("Suicune", "Water", null, 2, "first", 2.0, 187.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/245.png", 245),
+    new Pokemon("Larvitar", "Rock", "Ground", 2, "first", 0.6, 72.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/246.png", 246),
+    new Pokemon("Pupitar", "Rock", "Ground", 2, "second", 1.2, 152.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/247.png", 247),
+    new Pokemon("Tyranitar", "Rock", "Dark", 2, "third", 2.0, 202.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/248.png", 248),
+    new Pokemon("Lugia", "Psychic", "Flying", 2, "first", 5.2, 216.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/249.png", 249),
+    new Pokemon("Ho-Oh", "Fire", "Flying", 2, "first", 3.8, 199.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/250.png", 250),
+    new Pokemon("Celebi", "Psychic", "Grass", 2, "first", 0.6, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/251.png", 251),
+    new Pokemon("Treecko", "Grass", null, 3, "first", 0.5, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/252.png", 252),
+    new Pokemon("Grovyle", "Grass", null, 3, "second", 0.9, 21.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/253.png", 253),
+    new Pokemon("Sceptile", "Grass", null, 3, "third", 1.7, 52.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/254.png", 254),
+    new Pokemon("Torchic", "Fire", null, 3, "first", 0.4, 2.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/255.png", 255),
+    new Pokemon("Combusken", "Fire", "Fighting", 3, "second", 0.9, 19.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/256.png", 256),
+    new Pokemon("Blaziken", "Fire", "Fighting", 3, "third", 1.9, 52.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/257.png", 257),
+    new Pokemon("Mudkip", "Water", null, 3, "first", 0.4, 7.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/258.png", 258),
+    new Pokemon("Marshtomp", "Water", "Ground", 3, "second", 0.7, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/259.png", 259),
+    new Pokemon("Swampert", "Water", "Ground", 3, "third", 1.5, 81.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/260.png", 260),
+    new Pokemon("Poochyena", "Dark", null, 3, "first", 0.5, 13.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/261.png", 261),
+    new Pokemon("Mightyena", "Dark", null, 3, "second", 1.0, 37.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/262.png", 262),
+    new Pokemon("Zigzagoon", "Normal", null, 3, "first", 0.4, 17.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/263.png", 263),
+    new Pokemon("Linoone", "Normal", null, 3, "second", 0.5, 32.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/264.png", 264),
+    new Pokemon("Wurmple", "Bug", null, 3, "first", 0.3, 3.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/265.png", 265),
+    new Pokemon("Silcoon", "Bug", null, 3, "second", 0.6, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/266.png", 266),
+    new Pokemon("Beautifly", "Bug", "Flying", 3, "third", 1.0, 28.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/267.png", 267),
+    new Pokemon("Cascoon", "Bug", null, 3, "second", 0.7, 11.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/268.png", 268),
+    new Pokemon("Dustox", "Bug", "Poison", 3, "third", 1.2, 31.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/269.png", 269),
+    new Pokemon("Lotad", "Water", "Grass", 3, "first", 0.5, 2.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/270.png", 270),
+    new Pokemon("Lombre", "Water", "Grass", 3, "second", 1.2, 32.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/271.png", 271),
+    new Pokemon("Ludicolo", "Water", "Grass", 3, "third", 1.5, 55.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/272.png", 272),
+    new Pokemon("Seedot", "Grass", null, 3, "first", 0.5, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/273.png", 273),
+    new Pokemon("Nuzleaf", "Grass", "Dark", 3, "second", 1.0, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/274.png", 274),
+    new Pokemon("Shiftry", "Grass", "Dark", 3, "third", 1.3, 59.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/275.png", 275),
+    new Pokemon("Taillow", "Normal", "Flying", 3, "first", 0.3, 2.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/276.png", 276),
+    new Pokemon("Swellow", "Normal", "Flying", 3, "second", 0.7, 19.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/277.png", 277),
+    new Pokemon("Wingull", "Water", "Flying", 3, "first", 0.6, 9.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/278.png", 278),
+    new Pokemon("Pelipper", "Water", "Flying", 3, "second", 1.2, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/279.png", 279),
+    new Pokemon("Ralts", "Psychic", "Fairy", 3, "first", 0.4, 6.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/280.png", 280),
+    new Pokemon("Kirlia", "Psychic", "Fairy", 3, "second", 0.8, 20.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/281.png", 281),
+    new Pokemon("Gardevoir", "Psychic", "Fairy", 3, "third", 1.6, 48.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/282.png", 282),
+    new Pokemon("Surskit", "Bug", "Water", 3, "first", 0.4, 1.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/283.png", 283),
+    new Pokemon("Masquerain", "Bug", "Flying", 3, "second", 0.8, 3.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/284.png", 284),
+    new Pokemon("Shroomish", "Grass", null, 3, "first", 0.4, 4.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/285.png", 285),
+    new Pokemon("Breloom", "Grass", "Fighting", 3, "second", 1.2, 39.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/286.png", 286),
+    new Pokemon("Slakoth", "Normal", null, 3, "first", 0.8, 24.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/287.png", 287),
+    new Pokemon("Vigoroth", "Normal", null, 3, "second", 1.4, 46.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/288.png", 288),
+    new Pokemon("Slaking", "Normal", null, 3, "third", 2.0, 130.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/289.png", 289),
+    new Pokemon("Nincada", "Bug", "Ground", 3, "first", 0.5, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/290.png", 290),
+    new Pokemon("Ninjask", "Bug", "Flying", 3, "second", 0.8, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/291.png", 291),
+    new Pokemon("Shedinja", "Bug", "Ghost", 3, "second", 0.8, 1.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/292.png", 292),
+    new Pokemon("Whismur", "Normal", null, 3, "first", 0.6, 16.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/293.png", 293),
+    new Pokemon("Loudred", "Normal", null, 3, "second", 1.0, 40.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/294.png", 294),
+    new Pokemon("Exploud", "Normal", null, 3, "third", 1.5, 84.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/295.png", 295),
+    new Pokemon("Makuhita", "Fighting", null, 3, "first", 1.0, 86.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/296.png", 296),
+    new Pokemon("Hariyama", "Fighting", null, 3, "second", 2.3, 253.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/297.png", 297),
+    new Pokemon("Azurill", "Normal", "Fairy", 3, "first", 0.2, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/298.png", 298),
+    new Pokemon("Nosepass", "Rock", null, 3, "first", 1.0, 97.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/299.png", 299),
+    new Pokemon("Skitty", "Normal", null, 3, "first", 0.6, 11.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/300.png", 300),
+    new Pokemon("Delcatty", "Normal", null, 3, "second", 1.1, 32.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/301.png", 301),
+    new Pokemon("Sableye", "Dark", "Ghost", 3, "first", 0.5, 11.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/302.png", 302),
+    new Pokemon("Mawile", "Steel", "Fairy", 3, "first", 0.6, 11.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/303.png", 303),
+    new Pokemon("Aron", "Steel", "Rock", 3, "first", 0.4, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/304.png", 304),
+    new Pokemon("Lairon", "Steel", "Rock", 3, "second", 0.9, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/305.png", 305),
+    new Pokemon("Aggron", "Steel", "Rock", 3, "third", 2.1, 360.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/306.png", 306),
+    new Pokemon("Meditite", "Fighting", "Psychic", 3, "first", 0.6, 11.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/307.png", 307),
+    new Pokemon("Medicham", "Fighting", "Psychic", 3, "second", 1.3, 31.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/308.png", 308),
+    new Pokemon("Electrike", "Electric", null, 3, "first", 0.6, 15.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/309.png", 309),
+    new Pokemon("Manectric", "Electric", null, 3, "second", 1.5, 40.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/310.png", 310),
+    new Pokemon("Plusle", "Electric", null, 3, "first", 0.4, 4.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/311.png", 311),
+    new Pokemon("Minun", "Electric", null, 3, "first", 0.4, 4.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/312.png", 312),
+    new Pokemon("Volbeat", "Bug", null, 3, "first", 0.7, 17.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/313.png", 313),
+    new Pokemon("Illumise", "Bug", null, 3, "first", 0.6, 17.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/314.png", 314),
+    new Pokemon("Roselia", "Grass", "Poison", 3, "first", 0.3, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/315.png", 315),
+    new Pokemon("Gulpin", "Poison", null, 3, "first", 0.4, 10.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/316.png", 316),
+    new Pokemon("Swalot", "Poison", null, 3, "second", 1.7, 80.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/317.png", 317),
+    new Pokemon("Carvanha", "Water", "Dark", 3, "first", 0.8, 20.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/318.png", 318),
+    new Pokemon("Sharpedo", "Water", "Dark", 3, "second", 1.8, 88.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/319.png", 319),
+    new Pokemon("Wailmer", "Water", null, 3, "first", 2.0, 130.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/320.png", 320),
+    new Pokemon("Wailord", "Water", null, 3, "second", 14.5, 398.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/321.png", 321),
+    new Pokemon("Numel", "Fire", "Ground", 3, "first", 0.7, 24.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/322.png", 322),
+    new Pokemon("Camerupt", "Fire", "Ground", 3, "second", 1.9, 220.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/323.png", 323),
+    new Pokemon("Torkoal", "Fire", null, 3, "first", 0.5, 80.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/324.png", 324),
+    new Pokemon("Spoink", "Psychic", null, 3, "first", 0.7, 30.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/325.png", 325),
+    new Pokemon("Grumpig", "Psychic", null, 3, "second", 0.9, 71.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/326.png", 326),
+    new Pokemon("Spinda", "Normal", null, 3, "first", 1.1, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/327.png", 327),
+    new Pokemon("Trapinch", "Ground", null, 3, "first", 0.7, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/328.png", 328),
+    new Pokemon("Vibrava", "Ground", "Dragon", 3, "second", 1.1, 15.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/329.png", 329),
+    new Pokemon("Flygon", "Ground", "Dragon", 3, "third", 2.0, 82.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/330.png", 330),
+    new Pokemon("Cacnea", "Grass", null, 3, "first", 0.4, 51.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/331.png", 331),
+    new Pokemon("Cacturne", "Grass", "Dark", 3, "second", 1.3, 77.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/332.png", 332),
+    new Pokemon("Swablu", "Normal", "Flying", 3, "first", 0.4, 1.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/333.png", 333),
+    new Pokemon("Altaria", "Dragon", "Flying", 3, "second", 1.1, 20.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/334.png", 334),
+    new Pokemon("Zangoose", "Normal", null, 3, "first", 1.3, 40.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/335.png", 335),
+    new Pokemon("Seviper", "Poison", null, 3, "first", 2.7, 52.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/336.png", 336),
+    new Pokemon("Lunatone", "Rock", "Psychic", 3, "first", 1.0, 168.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/337.png", 337),
+    new Pokemon("Solrock", "Rock", "Psychic", 3, "first", 1.2, 154.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/338.png", 338),
+    new Pokemon("Barboach", "Water", "Ground", 3, "first", 0.4, 1.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/339.png", 339),
+    new Pokemon("Whiscash", "Water", "Ground", 3, "second", 0.9, 23.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/340.png", 340),
+    new Pokemon("Corphish", "Water", null, 3, "first", 0.6, 11.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/341.png", 341),
+    new Pokemon("Crawdaunt", "Water", "Dark", 3, "second", 1.1, 32.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/342.png", 342),
+    new Pokemon("Baltoy", "Ground", "Psychic", 3, "first", 0.5, 21.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/343.png", 343),
+    new Pokemon("Claydol", "Ground", "Psychic", 3, "second", 1.5, 108.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/344.png", 344),
+    new Pokemon("Lileep", "Rock", "Grass", 3, "first", 1.0, 23.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/345.png", 345),
+    new Pokemon("Cradily", "Rock", "Grass", 3, "second", 1.5, 60.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/346.png", 346),
+    new Pokemon("Anorith", "Rock", "Bug", 3, "first", 0.7, 12.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/347.png", 347),
+    new Pokemon("Armaldo", "Rock", "Bug", 3, "second", 1.5, 68.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/348.png", 348),
+    new Pokemon("Feebas", "Water", null, 3, "first", 0.6, 7.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/349.png", 349),
+    new Pokemon("Milotic", "Water", null, 3, "second", 6.2, 162.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/350.png", 350),
+    new Pokemon("Castform", "Normal", null, 3, "first", 0.3, 0.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/351.png", 351),
+    new Pokemon("Kecleon", "Normal", null, 3, "first", 1.0, 22.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/352.png", 352),
+    new Pokemon("Shuppet", "Ghost", null, 3, "first", 0.6, 2.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/353.png", 353),
+    new Pokemon("Banette", "Ghost", null, 3, "second", 1.1, 12.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/354.png", 354),
+    new Pokemon("Duskull", "Ghost", null, 3, "first", 0.8, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/355.png", 355),
+    new Pokemon("Dusclops", "Ghost", null, 3, "second", 1.6, 30.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/356.png", 356),
+    new Pokemon("Tropius", "Grass", "Flying", 3, "first", 2.0, 100.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/357.png", 357),
+    new Pokemon("Chimecho", "Psychic", null, 3, "first", 0.6, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/358.png", 358),
+    new Pokemon("Absol", "Dark", null, 3, "first", 1.2, 47.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/359.png", 359),
+    new Pokemon("Wynaut", "Psychic", null, 3, "first", 0.6, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/360.png", 360),
+    new Pokemon("Snorunt", "Ice", null, 3, "first", 0.7, 16.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/361.png", 361),
+    new Pokemon("Glalie", "Ice", null, 3, "second", 1.5, 256.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/362.png", 362),
+    new Pokemon("Spheal", "Ice", "Water", 3, "first", 0.8, 39.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/363.png", 363),
+    new Pokemon("Sealeo", "Ice", "Water", 3, "second", 1.1, 87.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/364.png", 364),
+    new Pokemon("Walrein", "Ice", "Water", 3, "third", 1.4, 150.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/365.png", 365),
+    new Pokemon("Clamperl", "Water", null, 3, "first", 0.4, 52.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/366.png", 366),
+    new Pokemon("Huntail", "Water", null, 3, "second", 1.7, 27.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/367.png", 367),
+    new Pokemon("Gorebyss", "Water", null, 3, "second", 1.8, 22.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/368.png", 368),
+    new Pokemon("Relicanth", "Water", "Rock", 3, "first", 1.0, 23.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/369.png", 369),
+    new Pokemon("Luvdisc", "Water", null, 3, "first", 0.6, 8.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/370.png", 370),
+    new Pokemon("Bagon", "Dragon", null, 3, "first", 0.6, 42.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/371.png", 371),
+    new Pokemon("Shelgon", "Dragon", null, 3, "second", 1.1, 110.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/372.png", 372),
+    new Pokemon("Salamence", "Dragon", "Flying", 3, "third", 1.5, 102.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/373.png", 373),
+    new Pokemon("Beldum", "Steel", "Psychic", 3, "first", 0.6, 95.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/374.png", 374),
+    new Pokemon("Metang", "Steel", "Psychic", 3, "second", 1.2, 202.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/375.png", 375),
+    new Pokemon("Metagross", "Steel", "Psychic", 3, "third", 1.6, 550.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/376.png", 376),
+    new Pokemon("Regirock", "Rock", null, 3, "first", 1.7, 230.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/377.png", 377),
+    new Pokemon("Regice", "Ice", null, 3, "first", 1.8, 175.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/378.png", 378),
+    new Pokemon("Registeel", "Steel", null, 3, "first", 1.9, 205.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/379.png", 379),
+    new Pokemon("Latias", "Dragon", "Psychic", 3, "first", 1.4, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/380.png", 380),
+    new Pokemon("Latios", "Dragon", "Psychic", 3, "first", 2.0, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/381.png", 381),
+    new Pokemon("Kyogre", "Water", null, 3, "first", 4.5, 352.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/382.png", 382),
+    new Pokemon("Groudon", "Ground", null, 3, "first", 3.5, 950.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/383.png", 383),
+    new Pokemon("Rayquaza", "Dragon", "Flying", 3, "first", 7.0, 206.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/384.png", 384),
+    new Pokemon("Jirachi", "Steel", "Psychic", 3, "first", 0.3, 1.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/385.png", 385),
+    new Pokemon("Deoxys", "Psychic", null, 3, "first", 1.7, 60.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/386.png", 386),
+    new Pokemon("Turtwig", "Grass", null, 4, "first", 0.4, 10.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/387.png", 387),
+    new Pokemon("Grotle", "Grass", null, 4, "second", 1.1, 97.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/388.png", 388),
+    new Pokemon("Torterra", "Grass", "Ground", 4, "third", 2.2, 310.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/389.png", 389),
+    new Pokemon("Chimchar", "Fire", null, 4, "first", 0.5, 6.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/390.png", 390),
+    new Pokemon("Monferno", "Fire", "Fighting", 4, "second", 0.9, 22.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/391.png", 391),
+    new Pokemon("Infernape", "Fire", "Fighting", 4, "third", 1.2, 55.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/392.png", 392),
+    new Pokemon("Piplup", "Water", null, 4, "first", 0.4, 5.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/393.png", 393),
+    new Pokemon("Prinplup", "Water", null, 4, "second", 0.8, 23.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/394.png", 394),
+    new Pokemon("Empoleon", "Water", "Steel", 4, "third", 1.7, 84.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/395.png", 395),
+    new Pokemon("Starly", "Normal", "Flying", 4, "first", 0.3, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/396.png", 396),
+    new Pokemon("Staravia", "Normal", "Flying", 4, "second", 0.6, 15.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/397.png", 397),
+    new Pokemon("Staraptor", "Normal", "Flying", 4, "third", 1.2, 24.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/398.png", 398),
+    new Pokemon("Bidoof", "Normal", null, 4, "first", 0.5, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/399.png", 399),
+    new Pokemon("Bibarel", "Normal", "Water", 4, "second", 1.0, 31.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/400.png", 400),
+    new Pokemon("Kricketot", "Bug", null, 4, "first", 0.3, 2.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/401.png", 401),
+    new Pokemon("Kricketune", "Bug", null, 4, "second", 1.0, 25.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/402.png", 402),
+    new Pokemon("Shinx", "Electric", null, 4, "first", 0.5, 9.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/403.png", 403),
+    new Pokemon("Luxio", "Electric", null, 4, "second", 0.9, 30.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/404.png", 404),
+    new Pokemon("Luxray", "Electric", null, 4, "third", 1.4, 42.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/405.png", 405),
+    new Pokemon("Budew", "Grass", "Poison", 4, "first", 0.2, 1.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/406.png", 406),
+    new Pokemon("Roserade", "Grass", "Poison", 4, "second", 0.9, 14.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/407.png", 407),
+    new Pokemon("Cranidos", "Rock", null, 4, "first", 0.9, 31.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/408.png", 408),
+    new Pokemon("Rampardos", "Rock", null, 4, "second", 1.6, 102.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/409.png", 409),
+    new Pokemon("Shieldon", "Rock", "Steel", 4, "first", 0.5, 57.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/410.png", 410),
+    new Pokemon("Bastiodon", "Rock", "Steel", 4, "second", 1.3, 149.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/411.png", 411),
+    new Pokemon("Burmy", "Bug", null, 4, "first", 0.2, 3.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/412.png", 412),
+    new Pokemon("Wormadam", "Bug", "Grass", 4, "second", 0.5, 6.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/413.png", 413),
+    new Pokemon("Mothim", "Bug", "Flying", 4, "second", 0.9, 23.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/414.png", 414),
+    new Pokemon("Combee", "Bug", "Flying", 4, "first", 0.3, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/415.png", 415),
+    new Pokemon("Vespiquen", "Bug", "Flying", 4, "second", 1.2, 38.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/416.png", 416),
+    new Pokemon("Pachirisu", "Electric", null, 4, "first", 0.4, 3.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/417.png", 417),
+    new Pokemon("Buizel", "Water", null, 4, "first", 0.7, 29.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/418.png", 418),
+    new Pokemon("Floatzel", "Water", null, 4, "second", 1.1, 33.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/419.png", 419),
+    new Pokemon("Cherubi", "Grass", null, 4, "first", 0.4, 3.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/420.png", 420),
+    new Pokemon("Cherrim", "Grass", null, 4, "second", 0.5, 9.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/421.png", 421),
+    new Pokemon("Shellos", "Water", null, 4, "first", 0.3, 6.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/422.png", 422),
+    new Pokemon("Gastrodon", "Water", "Ground", 4, "second", 0.9, 29.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/423.png", 423),
+    new Pokemon("Ambipom", "Normal", null, 4, "second", 1.2, 20.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/424.png", 424),
+    new Pokemon("Drifloon", "Ghost", "Flying", 4, "first", 0.4, 1.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/425.png", 425),
+    new Pokemon("Drifblim", "Ghost", "Flying", 4, "second", 1.2, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/426.png", 426),
+    new Pokemon("Buneary", "Normal", null, 4, "first", 0.4, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/427.png", 427),
+    new Pokemon("Lopunny", "Normal", null, 4, "second", 1.2, 33.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/428.png", 428),
+    new Pokemon("Mismagius", "Ghost", null, 4, "second", 0.9, 4.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/429.png", 429),
+    new Pokemon("Honchkrow", "Dark", "Flying", 4, "second", 0.9, 27.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/430.png", 430),
+    new Pokemon("Glameow", "Normal", null, 4, "first", 0.5, 3.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/431.png", 431),
+    new Pokemon("Purugly", "Normal", null, 4, "second", 1.0, 43.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/432.png", 432),
+    new Pokemon("Chingling", "Psychic", null, 4, "first", 0.2, 0.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/433.png", 433),
+    new Pokemon("Stunky", "Poison", "Dark", 4, "first", 0.4, 19.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/434.png", 434),
+    new Pokemon("Skuntank", "Poison", "Dark", 4, "second", 1.0, 38.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/435.png", 435),
+    new Pokemon("Bronzor", "Steel", "Psychic", 4, "first", 0.5, 60.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/436.png", 436),
+    new Pokemon("Bronzong", "Steel", "Psychic", 4, "second", 1.3, 187.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/437.png", 437),
+    new Pokemon("Bonsly", "Rock", null, 4, "first", 0.5, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/438.png", 438),
+    new Pokemon("Mime Jr.", "Psychic", "Fairy", 4, "first", 0.6, 13.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/439.png", 439),
+    new Pokemon("Happiny", "Normal", null, 4, "first", 0.6, 24.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/440.png", 440),
+    new Pokemon("Chatot", "Normal", "Flying", 4, "first", 0.5, 1.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/441.png", 441),
+    new Pokemon("Spiritomb", "Ghost", "Dark", 4, "first", 1.0, 108.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/442.png", 442),
+    new Pokemon("Gible", "Dragon", "Ground", 4, "first", 0.7, 20.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/443.png", 443),
+    new Pokemon("Gabite", "Dragon", "Ground", 4, "second", 1.4, 56.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/444.png", 444),
+    new Pokemon("Garchomp", "Dragon", "Ground", 4, "third", 1.9, 95.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/445.png", 445),
+    new Pokemon("Munchlax", "Normal", null, 4, "first", 0.6, 105.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/446.png", 446),
+    new Pokemon("Riolu", "Fighting", null, 4, "first", 0.7, 20.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/447.png", 447),
+    new Pokemon("Lucario", "Fighting", "Steel", 4, "second", 1.2, 54.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/448.png", 448),
+    new Pokemon("Hippopotas", "Ground", null, 4, "first", 0.8, 49.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/449.png", 449),
+    new Pokemon("Hippowdon", "Ground", null, 4, "second", 2.0, 300.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/450.png", 450),
+    new Pokemon("Skorupi", "Poison", "Bug", 4, "first", 0.8, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/451.png", 451),
+    new Pokemon("Drapion", "Poison", "Dark", 4, "second", 1.3, 61.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/452.png", 452),
+    new Pokemon("Croagunk", "Poison", "Fighting", 4, "first", 0.7, 23.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/453.png", 453),
+    new Pokemon("Toxicroak", "Poison", "Fighting", 4, "second", 1.3, 44.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/454.png", 454),
+    new Pokemon("Carnivine", "Grass", null, 4, "first", 1.4, 27.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/455.png", 455),
+    new Pokemon("Finneon", "Water", null, 4, "first", 0.4, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/456.png", 456),
+    new Pokemon("Lumineon", "Water", null, 4, "second", 1.2, 24.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/457.png", 457),
+    new Pokemon("Mantyke", "Water", "Flying", 4, "first", 1.0, 65.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/458.png", 458),
+    new Pokemon("Snover", "Grass", "Ice", 4, "first", 1.0, 50.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/459.png", 459),
+    new Pokemon("Abomasnow", "Grass", "Ice", 4, "second", 2.2, 135.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/460.png", 460),
+    new Pokemon("Weavile", "Dark", "Ice", 4, "second", 1.1, 34.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/461.png", 461),
+    new Pokemon("Magnezone", "Electric", "Steel", 4, "second", 1.2, 180.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/462.png", 462),
+    new Pokemon("Lickilicky", "Normal", null, 4, "second", 1.7, 140.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/463.png", 463),
+    new Pokemon("Rhyperior", "Ground", "Rock", 4, "third", 2.4, 282.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/464.png", 464),
+    new Pokemon("Tangrowth", "Grass", null, 4, "second", 2.0, 128.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/465.png", 465),
+    new Pokemon("Electivire", "Electric", null, 4, "second", 1.8, 138.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/466.png", 466),
+    new Pokemon("Magmortar", "Fire", null, 4, "second", 1.6, 68.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/467.png", 467),
+    new Pokemon("Togekiss", "Fairy", "Flying", 4, "third", 1.5, 38.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/468.png", 468),
+    new Pokemon("Yanmega", "Bug", "Flying", 4, "second", 1.9, 51.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/469.png", 469),
+    new Pokemon("Leafeon", "Grass", null, 4, "second", 1.0, 25.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/470.png", 470),
+    new Pokemon("Glaceon", "Ice", null, 4, "second", 0.8, 25.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/471.png", 471),
+    new Pokemon("Gliscor", "Ground", "Flying", 4, "second", 2.0, 42.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/472.png", 472),
+    new Pokemon("Mamoswine", "Ice", "Ground", 4, "third", 2.5, 291.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/473.png", 473),
+    new Pokemon("Porygon-Z", "Normal", null, 4, "third", 0.9, 34.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/474.png", 474),
+    new Pokemon("Gallade", "Psychic", "Fighting", 4, "second", 1.6, 52.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/475.png", 475),
+    new Pokemon("Probopass", "Rock", "Steel", 4, "second", 1.4, 340.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/476.png", 476),
+    new Pokemon("Dusknoir", "Ghost", null, 4, "third", 2.2, 106.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/477.png", 477),
+    new Pokemon("Froslass", "Ice", "Ghost", 4, "second", 1.3, 26.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/478.png", 478),
+    new Pokemon("Rotom", "Electric", "Ghost", 4, "first", 0.3, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/479.png", 479),
+    new Pokemon("Uxie", "Psychic", null, 4, "first", 0.3, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/480.png", 480),
+    new Pokemon("Mesprit", "Psychic", null, 4, "first", 0.3, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/481.png", 481),
+    new Pokemon("Azelf", "Psychic", null, 4, "first", 0.3, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/482.png", 482),
+    new Pokemon("Dialga", "Steel", "Dragon", 4, "first", 5.4, 683.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/483.png", 483),
+    new Pokemon("Palkia", "Water", "Dragon", 4, "first", 4.2, 336.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/484.png", 484),
+    new Pokemon("Heatran", "Fire", "Steel", 4, "first", 1.7, 430.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/485.png", 485),
+    new Pokemon("Cresselia", "Psychic", null, 4, "first", 1.5, 85.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/488.png", 488),
+    new Pokemon("Phione", "Water", null, 4, "first", 0.4, 3.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/489.png", 489),
+    new Pokemon("Manaphy", "Water", null, 4, "first", 0.3, 1.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/490.png", 490),
+    new Pokemon("Darkrai", "Dark", null, 4, "first", 1.5, 50.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/491.png", 491),
+    new Pokemon("Shaymin (Land)", "Grass", null, 4, "first", 0.2, 2.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/492.png", 492),
+    new Pokemon("Shaymin (Sky)", "Grass", "Flying", 4, "first", 0.4, 5.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/492-sky.png", 492),
+    new Pokemon("Arceus", "Normal", null, 4, "first", 3.2, 320.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/493.png", 493),
+    new Pokemon("Victini", "Psychic", "Fire", 5, "first", 0.4, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/494.png", 494),
+    new Pokemon("Snivy", "Grass", null, 5, "first", 0.6, 8.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/495.png", 495),
+    new Pokemon("Servine", "Grass", null, 5, "second", 0.8, 16.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/496.png", 496),
+    new Pokemon("Serperior", "Grass", null, 5, "third", 3.3, 63.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/497.png", 497),
+    new Pokemon("Tepig", "Fire", null, 5, "first", 0.5, 9.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/498.png", 498),
+    new Pokemon("Pignite", "Fire", "Fighting", 5, "second", 1.0, 55.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/499.png", 499),
+    new Pokemon("Emboar", "Fire", "Fighting", 5, "third", 1.6, 150.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/500.png", 500),
+    new Pokemon("Oshawott", "Water", null, 5, "first", 0.5, 5.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/501.png", 501),
+    new Pokemon("Dewott", "Water", null, 5, "second", 0.8, 24.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/502.png", 502),
+    new Pokemon("Samurott", "Water", null, 5, "third", 1.5, 94.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/503.png", 503),
+    new Pokemon("Patrat", "Normal", null, 5, "first", 0.5, 11.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/504.png", 504),
+    new Pokemon("Watchog", "Normal", null, 5, "second", 1.1, 27.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/505.png", 505),
+    new Pokemon("Lillipup", "Normal", null, 5, "first", 0.4, 4.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/506.png", 506),
+    new Pokemon("Herdier", "Normal", null, 5, "second", 0.9, 14.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/507.png", 507),
+    new Pokemon("Stoutland", "Normal", null, 5, "third", 1.2, 61.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/508.png", 508),
+    new Pokemon("Purrloin", "Dark", null, 5, "first", 0.4, 10.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/509.png", 509),
+    new Pokemon("Liepard", "Dark", null, 5, "second", 1.1, 37.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/510.png", 510),
+    new Pokemon("Pansage", "Grass", null, 5, "first", 0.6, 10.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/511.png", 511),
+    new Pokemon("Simisage", "Grass", null, 5, "second", 1.1, 30.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/512.png", 512),
+    new Pokemon("Pansear", "Fire", null, 5, "first", 0.6, 11.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/513.png", 513),
+    new Pokemon("Simisear", "Fire", null, 5, "second", 1.0, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/514.png", 514),
+    new Pokemon("Panpour", "Water", null, 5, "first", 0.6, 13.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/515.png", 515),
+    new Pokemon("Simipour", "Water", null, 5, "second", 1.0, 29.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/516.png", 516),
+    new Pokemon("Munna", "Psychic", null, 5, "first", 0.6, 23.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/517.png", 517),
+    new Pokemon("Musharna", "Psychic", null, 5, "second", 1.1, 60.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/518.png", 518),
+    new Pokemon("Pidove", "Normal", "Flying", 5, "first", 0.3, 2.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/519.png", 519),
+    new Pokemon("Tranquill", "Normal", "Flying", 5, "second", 0.6, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/520.png", 520),
+    new Pokemon("Unfezant", "Normal", "Flying", 5, "third", 1.2, 29.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/521.png", 521),
+    new Pokemon("Blitzle", "Electric", null, 5, "first", 0.8, 29.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/522.png", 522),
+    new Pokemon("Zebstrika", "Electric", null, 5, "second", 1.6, 79.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/523.png", 523),
+    new Pokemon("Roggenrola", "Rock", null, 5, "first", 0.4, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/524.png", 524),
+    new Pokemon("Boldore", "Rock", null, 5, "second", 0.9, 102.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/525.png", 525),
+    new Pokemon("Gigalith", "Rock", null, 5, "third", 1.7, 260.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/526.png", 526),
+    new Pokemon("Woobat", "Psychic", "Flying", 5, "first", 0.4, 2.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/527.png", 527),
+    new Pokemon("Swoobat", "Psychic", "Flying", 5, "second", 0.9, 10.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/528.png", 528),
+    new Pokemon("Drilbur", "Ground", null, 5, "first", 0.3, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/529.png", 529),
+    new Pokemon("Excadrill", "Ground", "Steel", 5, "second", 0.7, 40.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/530.png", 530),
+    new Pokemon("Audino", "Normal", null, 5, "first", 1.1, 31.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/531.png", 531),
+    new Pokemon("Timburr", "Fighting", null, 5, "first", 0.6, 12.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/532.png", 532),
+    new Pokemon("Gurdurr", "Fighting", null, 5, "second", 1.2, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/533.png", 533),
+    new Pokemon("Conkeldurr", "Fighting", null, 5, "third", 1.4, 87.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/534.png", 534),
+    new Pokemon("Tympole", "Water", null, 5, "first", 0.5, 4.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/535.png", 535),
+    new Pokemon("Palpitoad", "Water", "Ground", 5, "second", 0.8, 17.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/536.png", 536),
+    new Pokemon("Seismitoad", "Water", "Ground", 5, "third", 1.5, 62.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/537.png", 537),
+    new Pokemon("Throh", "Fighting", null, 5, "first", 1.3, 55.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/538.png", 538),
+    new Pokemon("Sawk", "Fighting", null, 5, "first", 1.4, 51.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/539.png", 539),
+    new Pokemon("Sewaddle", "Bug", "Grass", 5, "first", 0.3, 2.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/540.png", 540),
+    new Pokemon("Swadloon", "Bug", "Grass", 5, "second", 0.5, 7.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/541.png", 541),
+    new Pokemon("Leavanny", "Bug", "Grass", 5, "third", 1.2, 20.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/542.png", 542),
+    new Pokemon("Venipede", "Bug", "Poison", 5, "first", 0.4, 5.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/543.png", 543),
+    new Pokemon("Whirlipede", "Bug", "Poison", 5, "second", 1.2, 58.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/544.png", 544),
+    new Pokemon("Scolipede", "Bug", "Poison", 5, "third", 2.5, 200.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/545.png", 545),
+    new Pokemon("Cottonee", "Grass", "Fairy", 5, "first", 0.3, 0.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/546.png", 546),
+    new Pokemon("Whimsicott", "Grass", "Fairy", 5, "second", 0.7, 6.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/547.png", 547),
+    new Pokemon("Petilil", "Grass", null, 5, "first", 0.5, 6.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/548.png", 548),
+    new Pokemon("Lilligant", "Grass", null, 5, "second", 1.1, 16.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/549.png", 549),
+    new Pokemon("Basculin (Red-Striped)", "Water", null, 5, "first", 1.0, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/550.png", 550),
+    new Pokemon("Sandile", "Ground", "Dark", 5, "first", 0.7, 15.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/551.png", 551),
+    new Pokemon("Krokorok", "Ground", "Dark", 5, "second", 1.0, 33.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/552.png", 552),
+    new Pokemon("Krookodile", "Ground", "Dark", 5, "third", 1.5, 96.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/553.png", 553),
+    new Pokemon("Darumaka", "Fire", null, 5, "first", 0.6, 37.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/554.png", 554),
+    new Pokemon("Darmanitan (Standard)", "Fire", null, 5, "second", 1.3, 92.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/555.png", 555),
+    new Pokemon("Maractus", "Grass", null, 5, "first", 1.0, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/556.png", 556),
+    new Pokemon("Dwebble", "Bug", "Rock", 5, "first", 0.3, 14.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/557.png", 557),
+    new Pokemon("Crustle", "Bug", "Rock", 5, "second", 1.4, 200.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/558.png", 558),
+    new Pokemon("Scraggy", "Dark", "Fighting", 5, "first", 0.6, 11.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/559.png", 559),
+    new Pokemon("Scrafty", "Dark", "Fighting", 5, "second", 1.1, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/560.png", 560),
+    new Pokemon("Sigilyph", "Psychic", "Flying", 5, "first", 1.4, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/561.png", 561),
+    new Pokemon("Yamask", "Ghost", null, 5, "first", 0.5, 1.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/562.png", 562),
+    new Pokemon("Cofagrigus", "Ghost", null, 5, "second", 1.7, 76.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/563.png", 563),
+    new Pokemon("Tirtouga", "Water", "Rock", 5, "first", 0.7, 16.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/564.png", 564),
+    new Pokemon("Carracosta", "Water", "Rock", 5, "second", 1.2, 81.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/565.png", 565),
+    new Pokemon("Archen", "Rock", "Flying", 5, "first", 0.5, 9.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/566.png", 566),
+    new Pokemon("Archeops", "Rock", "Flying", 5, "second", 1.4, 32.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/567.png", 567),
+    new Pokemon("Trubbish", "Poison", null, 5, "first", 0.6, 31.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/568.png", 568),
+    new Pokemon("Garbodor", "Poison", null, 5, "second", 1.9, 107.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/569.png", 569),
+    new Pokemon("Zorua", "Dark", null, 5, "first", 0.7, 12.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/570.png", 570),
+    new Pokemon("Zoroark", "Dark", null, 5, "second", 1.6, 81.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/571.png", 571),
+    new Pokemon("Minccino", "Normal", null, 5, "first", 0.4, 5.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/572.png", 572),
+    new Pokemon("Cinccino", "Normal", null, 5, "second", 0.5, 7.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/573.png", 573),
+    new Pokemon("Gothita", "Psychic", null, 5, "first", 0.4, 5.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/574.png", 574),
+    new Pokemon("Gothorita", "Psychic", null, 5, "second", 0.7, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/575.png", 575),
+    new Pokemon("Gothitelle", "Psychic", null, 5, "third", 1.5, 44.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/576.png", 576),
+    new Pokemon("Solosis", "Psychic", null, 5, "first", 0.3, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/577.png", 577),
+    new Pokemon("Duosion", "Psychic", null, 5, "second", 0.6, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/578.png", 578),
+    new Pokemon("Reuniclus", "Psychic", null, 5, "third", 1.0, 20.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/579.png", 579),
+    new Pokemon("Ducklett", "Water", "Flying", 5, "first", 0.5, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/580.png", 580),
+    new Pokemon("Swanna", "Water", "Flying", 5, "second", 1.3, 24.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/581.png", 581),
+    new Pokemon("Vanillite", "Ice", null, 5, "first", 0.4, 5.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/582.png", 582),
+    new Pokemon("Vanillish", "Ice", null, 5, "second", 1.1, 41.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/583.png", 583),
+    new Pokemon("Vanilluxe", "Ice", null, 5, "third", 1.3, 57.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/584.png", 584),
+    new Pokemon("Deerling", "Normal", "Grass", 5, "first", 0.6, 19.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/585.png", 585),
+    new Pokemon("Sawsbuck", "Normal", "Grass", 5, "second", 1.9, 92.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/586.png", 586),
+    new Pokemon("Emolga", "Electric", "Flying", 5, "first", 0.4, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/587.png", 587),
+    new Pokemon("Karrablast", "Bug", null, 5, "first", 0.5, 5.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/588.png", 588),
+    new Pokemon("Escavalier", "Bug", "Steel", 5, "second", 1.0, 33.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/589.png", 589),
+    new Pokemon("Foongus", "Grass", "Poison", 5, "first", 0.2, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/590.png", 590),
+    new Pokemon("Amoonguss", "Grass", "Poison", 5, "second", 0.6, 10.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/591.png", 591),
+    new Pokemon("Frillish", "Water", "Ghost", 5, "first", 1.2, 33.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/592.png", 592),
+    new Pokemon("Frillish", "Water", "Ghost", 5, "first", 1.2, 33.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/592.png", 592),
+    new Pokemon("Jellicent", "Water", "Ghost", 5, "second", 2.2, 135.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/593.png", 593),
+    new Pokemon("Alomomola", "Water", null, 5, "first", 1.2, 31.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/594.png", 594),
+    new Pokemon("Joltik", "Bug", "Electric", 5, "first", 0.1, 0.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/595.png", 595),
+    new Pokemon("Galvantula", "Bug", "Electric", 5, "second", 0.8, 14.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/596.png", 596),
+    new Pokemon("Ferroseed", "Grass", "Steel", 5, "first", 0.6, 18.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/597.png", 597),
+    new Pokemon("Ferrothorn", "Grass", "Steel", 5, "second", 1.0, 110.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/598.png", 598),
+    new Pokemon("Klink", "Steel", null, 5, "first", 0.3, 21.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/599.png", 599),
+    new Pokemon("Klang", "Steel", null, 5, "second", 0.6, 51.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/600.png", 600),
+    new Pokemon("Klinklang", "Steel", null, 5, "third", 0.6, 81.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/601.png", 601),
+    new Pokemon("Tynamo", "Electric", null, 5, "first", 0.2, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/602.png", 602),
+    new Pokemon("Eelektrik", "Electric", null, 5, "second", 1.2, 22.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/603.png", 603),
+    new Pokemon("Eelektross", "Electric", null, 5, "third", 2.1, 80.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/604.png", 604),
+    new Pokemon("Elgyem", "Psychic", null, 5, "first", 0.5, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/605.png", 605),
+    new Pokemon("Beheeyem", "Psychic", null, 5, "second", 1.0, 34.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/606.png", 606),
+    new Pokemon("Litwick", "Ghost", "Fire", 5, "first", 0.3, 3.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/607.png", 607),
+    new Pokemon("Lampent", "Ghost", "Fire", 5, "second", 0.6, 13.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/608.png", 608),
+    new Pokemon("Chandelure", "Ghost", "Fire", 5, "third", 1.0, 34.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/609.png", 609),
+    new Pokemon("Axew", "Dragon", null, 5, "first", 0.6, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/610.png", 610),
+    new Pokemon("Fraxure", "Dragon", null, 5, "second", 1.0, 36.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/611.png", 611),
+    new Pokemon("Haxorus", "Dragon", null, 5, "third", 1.8, 105.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/612.png", 612),
+    new Pokemon("Cubchoo", "Ice", null, 5, "first", 0.5, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/613.png", 613),
+    new Pokemon("Beartic", "Ice", null, 5, "second", 2.6, 260.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/614.png", 614),
+    new Pokemon("Cryogonal", "Ice", null, 5, "first", 1.1, 148.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/615.png", 615),
+    new Pokemon("Shelmet", "Bug", null, 5, "first", 0.4, 7.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/616.png", 616),
+    new Pokemon("Accelgor", "Bug", null, 5, "second", 0.8, 25.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/617.png", 617),
+    new Pokemon("Stunfisk", "Ground", "Electric", 5, "first", 0.7, 11.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/618.png", 618),
+    new Pokemon("Mienfoo", "Fighting", null, 5, "first", 0.9, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/619.png", 619),
+    new Pokemon("Mienshao", "Fighting", null, 5, "second", 1.4, 35.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/620.png", 620),
+    new Pokemon("Druddigon", "Dragon", null, 5, "first", 1.6, 139.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/621.png", 621),
+    new Pokemon("Golett", "Ground", "Ghost", 5, "first", 1.0, 92.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/622.png", 622),
+    new Pokemon("Golurk", "Ground", "Ghost", 5, "second", 2.8, 330.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/623.png", 623),
+    new Pokemon("Pawniard", "Dark", "Steel", 5, "first", 0.5, 10.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/624.png", 624),
+    new Pokemon("Bisharp", "Dark", "Steel", 5, "second", 1.6, 70.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/625.png", 625),
+    new Pokemon("Bouffalant", "Normal", null, 5, "first", 1.6, 94.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/626.png", 626),
+    new Pokemon("Rufflet", "Normal", "Flying", 5, "first", 0.5, 10.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/627.png", 627),
+    new Pokemon("Braviary", "Normal", "Flying", 5, "second", 1.5, 41.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/628.png", 628),
+    new Pokemon("Vullaby", "Dark", "Flying", 5, "first", 0.5, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/629.png", 629),
+    new Pokemon("Mandibuzz", "Dark", "Flying", 5, "second", 1.2, 39.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/630.png", 630),
+    new Pokemon("Heatmor", "Fire", null, 5, "first", 1.4, 58.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/631.png", 631),
+    new Pokemon("Durant", "Bug", "Steel", 5, "first", 0.3, 33.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/632.png", 632),
+    new Pokemon("Deino", "Dark", "Dragon", 5, "first", 0.8, 17.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/633.png", 633),
+    new Pokemon("Zweilous", "Dark", "Dragon", 5, "second", 1.4, 50.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/634.png", 634),
+    new Pokemon("Hydreigon", "Dark", "Dragon", 5, "third", 1.8, 160.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/635.png", 635),
+    new Pokemon("Larvesta", "Bug", "Fire", 5, "first", 1.1, 28.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/636.png", 636),
+    new Pokemon("Volcarona", "Bug", "Fire", 5, "second", 1.6, 46.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/637.png", 637),
+    new Pokemon("Cobalion", "Steel", "Fighting", 5, "first", 2.1, 250.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/638.png", 638),
+    new Pokemon("Terrakion", "Rock", "Fighting", 5, "first", 1.9, 260.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/639.png", 639),
+    new Pokemon("Virizion", "Grass", "Fighting", 5, "first", 2.0, 200.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/640.png", 640),
+    new Pokemon("Tornadus (Incarnate)", "Flying", null, 5, "first", 1.5, 63.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/641.png", 641),
+    new Pokemon("Thundurus (Incarnate)", "Electric", "Flying", 5, "first", 1.5, 61.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/642.png", 642),
+    new Pokemon("Reshiram", "Dragon", "Fire", 5, "first", 3.2, 330.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/643.png", 643),
+    new Pokemon("Zekrom", "Dragon", "Electric", 5, "first", 2.9, 345.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/644.png", 644),
+    new Pokemon("Landorus (Incarnate)", "Ground", "Flying", 5, "first", 1.5, 68.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/645.png", 645),
+    new Pokemon("Kyurem", "Dragon", "Ice", 5, "first", 3.0, 325.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/646.png", 646),
+    new Pokemon("Keldeo (Ordinary)", "Water", "Fighting", 5, "first", 1.4, 48.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/647.png", 647),
+    new Pokemon("Meloetta (Aria)", "Normal", "Psychic", 5, "first", 0.6, 6.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/648.png", 648),
+    new Pokemon("Genesect", "Bug", "Steel", 5, "first", 1.5, 82.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/649.png", 649),
+    new Pokemon("Chespin", "Grass", null, 6, "first", 0.4, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/650.png", 650),
+    new Pokemon("Quilladin", "Grass", null, 6, "second", 0.7, 29.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/651.png", 651),
+    new Pokemon("Chesnaught", "Grass", "Fighting", 6, "third", 1.6, 90.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/652.png", 652),
+    new Pokemon("Fennekin", "Fire", null, 6, "first", 0.4, 9.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/653.png", 653),
+    new Pokemon("Braixen", "Fire", null, 6, "second", 1.0, 14.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/654.png", 654),
+    new Pokemon("Delphox", "Fire", "Psychic", 6, "third", 1.5, 39.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/655.png", 655),
+    new Pokemon("Froakie", "Water", null, 6, "first", 0.3, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/656.png", 656),
+    new Pokemon("Frogadier", "Water", null, 6, "second", 0.6, 10.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/657.png", 657),
+    new Pokemon("Greninja", "Water", "Dark", 6, "third", 1.5, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/658.png", 658),
+    new Pokemon("Bunnelby", "Normal", null, 6, "first", 0.4, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/659.png", 659),
+    new Pokemon("Diggersby", "Normal", "Ground", 6, "second", 1.0, 42.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/660.png", 660),
+    new Pokemon("Fletchling", "Normal", "Flying", 6, "first", 0.3, 1.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/661.png", 661),
+    new Pokemon("Fletchinder", "Fire", "Flying", 6, "second", 0.7, 16.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/662.png", 662),
+    new Pokemon("Talonflame", "Fire", "Flying", 6, "third", 1.2, 24.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/663.png", 663),
+    new Pokemon("Scatterbug", "Bug", null, 6, "first", 0.3, 2.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/664.png", 664),
+    new Pokemon("Spewpa", "Bug", null, 6, "second", 0.3, 8.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/665.png", 665),
+    new Pokemon("Vivillon", "Bug", "Flying", 6, "third", 1.2, 17.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/666.png", 666),
+    new Pokemon("Litleo", "Fire", "Normal", 6, "first", 0.6, 13.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/667.png", 667),
+    new Pokemon("Pyroar", "Fire", "Normal", 6, "second", 1.5, 81.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/668.png", 668),
+    new Pokemon("Flabébé", "Fairy", null, 6, "first", 0.1, 0.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/669.png", 669),
+    new Pokemon("Floette", "Fairy", null, 6, "second", 0.2, 0.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/670.png", 670),
+    new Pokemon("Florges", "Fairy", null, 6, "third", 1.1, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/671.png", 671),
+    new Pokemon("Skiddo", "Grass", null, 6, "first", 0.9, 31.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/672.png", 672),
+    new Pokemon("Gogoat", "Grass", null, 6, "second", 1.7, 91.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/673.png", 673),
+    new Pokemon("Pancham", "Fighting", null, 6, "first", 0.6, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/674.png", 674),
+    new Pokemon("Pangoro", "Fighting", "Dark", 6, "second", 2.1, 136.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/675.png", 675),
+    new Pokemon("Furfrou", "Normal", null, 6, "first", 1.2, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/676.png", 676),
+    new Pokemon("Espurr", "Psychic", null, 6, "first", 0.3, 3.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/677.png", 677),
+    new Pokemon("Meowstic (Male)", "Psychic", null, 6, "second", 0.6, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/678.png", 678),
+    new Pokemon("Honedge", "Steel", "Ghost", 6, "first", 0.8, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/679.png", 679),
+    new Pokemon("Doublade", "Steel", "Ghost", 6, "second", 0.8, 4.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/680.png", 680),
+    new Pokemon("Aegislash (Shield)", "Steel", "Ghost", 6, "third", 1.7, 53.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/681.png", 681),
+    new Pokemon("Spritzee", "Fairy", null, 6, "first", 0.2, 0.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/682.png", 682),
+    new Pokemon("Aromatisse", "Fairy", null, 6, "second", 0.8, 15.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/683.png", 683),
+    new Pokemon("Swirlix", "Fairy", null, 6, "first", 0.4, 3.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/684.png", 684),
+    new Pokemon("Slurpuff", "Fairy", null, 6, "second", 0.8, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/685.png", 685),
+    new Pokemon("Inkay", "Dark", "Psychic", 6, "first", 0.4, 3.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/686.png", 686),
+    new Pokemon("Malamar", "Dark", "Psychic", 6, "second", 1.5, 47.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/687.png", 687),
+    new Pokemon("Binacle", "Rock", "Water", 6, "first", 0.5, 31.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/688.png", 688),
+    new Pokemon("Barbaracle", "Rock", "Water", 6, "second", 1.3, 96.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/689.png", 689),
+    new Pokemon("Skrelp", "Poison", "Water", 6, "first", 0.5, 7.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/690.png", 690),
+    new Pokemon("Dragalge", "Poison", "Dragon", 6, "second", 1.8, 81.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/691.png", 691),
+    new Pokemon("Clauncher", "Water", null, 6, "first", 0.5, 8.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/692.png", 692),
+    new Pokemon("Clawitzer", "Water", null, 6, "second", 1.3, 35.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/693.png", 693),
+    new Pokemon("Helioptile", "Electric", "Normal", 6, "first", 0.5, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/694.png", 694),
+    new Pokemon("Heliolisk", "Electric", "Normal", 6, "second", 1.0, 21.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/695.png", 695),
+    new Pokemon("Tyrunt", "Rock", "Dragon", 6, "first", 0.8, 26.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/696.png", 696),
+    new Pokemon("Tyrantrum", "Rock", "Dragon", 6, "second", 2.5, 270.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/697.png", 697),
+    new Pokemon("Amaura", "Rock", "Ice", 6, "first", 1.3, 25.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/698.png", 698),
+    new Pokemon("Aurorus", "Rock", "Ice", 6, "second", 2.7, 225.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/699.png", 699),
+    new Pokemon("Sylveon", "Fairy", null, 6, "second", 1.0, 23.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/700.png", 700),
+    new Pokemon("Hawlucha", "Fighting", "Flying", 6, "first", 0.8, 21.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/701.png", 701),
+    new Pokemon("Dedenne", "Electric", "Fairy", 6, "first", 0.2, 2.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/702.png", 702),
+    new Pokemon("Carbink", "Rock", "Fairy", 6, "first", 0.3, 5.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/703.png", 703),
+    new Pokemon("Goomy", "Dragon", null, 6, "first", 0.3, 2.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/704.png", 704),
+    new Pokemon("Sliggoo", "Dragon", null, 6, "second", 0.8, 17.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/705.png", 705),
+    new Pokemon("Goodra", "Dragon", null, 6, "third", 2.0, 150.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/706.png", 706),
+    new Pokemon("Klefki", "Steel", "Fairy", 6, "first", 0.2, 3.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/707.png", 707),
+    new Pokemon("Phantump", "Ghost", "Grass", 6, "first", 0.4, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/708.png", 708),
+    new Pokemon("Trevenant", "Ghost", "Grass", 6, "second", 1.5, 71.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/709.png", 709),
+    new Pokemon("Pumpkaboo (Average)", "Ghost", "Grass", 6, "first", 0.4, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/710.png", 710),
+    new Pokemon("Gourgeist (Average)", "Ghost", "Grass", 6, "second", 0.9, 12.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/711.png", 711),
+    new Pokemon("Bergmite", "Ice", null, 6, "first", 1.0, 99.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/712.png", 712),
+    new Pokemon("Avalugg", "Ice", null, 6, "second", 2.0, 505.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/713.png", 713),
+    new Pokemon("Noibat", "Flying", "Dragon", 6, "first", 0.5, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/714.png", 714),
+    new Pokemon("Noivern", "Flying", "Dragon", 6, "second", 1.5, 85.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/715.png", 715),
+    new Pokemon("Xerneas", "Fairy", null, 6, "first", 3.0, 215.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/716.png", 716),
+    new Pokemon("Yveltal", "Dark", "Flying", 6, "first", 5.8, 203.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/717.png", 717),
+    new Pokemon("Zygarde", "Dragon", "Ground", 6, "first", 5.0, 305.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/718.png", 718),
+    new Pokemon("Diancie", "Rock", "Fairy", 6, "first", 0.7, 8.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/719.png", 719),
+    new Pokemon("Hoopa ", "Psychic", "Ghost", 6, "first", 0.5, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/720.png", 720),
+    new Pokemon("Volcanion", "Fire", "Water", 6, "first", 1.7, 195.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/721.png", 721),
+     new Pokemon("Rowlet", "Grass", "Flying", 7, "first", 0.3, 1.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/722.png", 722),
+    new Pokemon("Dartrix", "Grass", "Flying", 7, "second", 0.7, 16.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/723.png", 723),
+    new Pokemon("Decidueye", "Grass", "Ghost", 7, "third", 1.6, 36.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/724.png", 724),
+    new Pokemon("Litten", "Fire", null, 7, "first", 0.4, 4.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/725.png", 725),
+    new Pokemon("Torracat", "Fire", null, 7, "second", 0.7, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/726.png", 726),
+    new Pokemon("Incineroar", "Fire", "Dark", 7, "third", 1.8, 83.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/727.png", 727),
+    new Pokemon("Popplio", "Water", null, 7, "first", 0.4, 7.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/728.png", 728),
+    new Pokemon("Brionne", "Water", null, 7, "second", 0.6, 17.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/729.png", 729),
+    new Pokemon("Primarina", "Water", "Fairy", 7, "third", 1.8, 44.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/730.png", 730),
+    new Pokemon("Pikipek", "Normal", "Flying", 7, "first", 0.3, 1.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/731.png", 731),
+    new Pokemon("Trumbeak", "Normal", "Flying", 7, "second", 0.6, 14.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/732.png", 732),
+    new Pokemon("Toucannon", "Normal", "Flying", 7, "third", 1.1, 26.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/733.png", 733),
+    new Pokemon("Yungoos", "Normal", null, 7, "first", 0.4, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/734.png", 734),
+    new Pokemon("Gumshoos", "Normal", null, 7, "second", 0.7, 14.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/735.png", 735),
+    new Pokemon("Grubbin", "Bug", null, 7, "first", 0.4, 4.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/736.png", 736),
+    new Pokemon("Charjabug", "Bug", "Electric", 7, "second", 0.5, 10.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/737.png", 737),
+    new Pokemon("Vikavolt", "Bug", "Electric", 7, "third", 1.5, 45.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/738.png", 738),
+    new Pokemon("Crabrawler", "Fighting", null, 7, "first", 0.6, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/739.png", 739),
+    new Pokemon("Crabominable", "Fighting", "Ice", 7, "second", 1.7, 180.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/740.png", 740),
+    new Pokemon("Oricorio (Baile)", "Fire", "Flying", 7, "first", 0.6, 3.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/741.png", 741),
+    new Pokemon("Cutiefly", "Bug", "Fairy", 7, "first", 0.1, 0.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/742.png", 742),
+    new Pokemon("Ribombee", "Bug", "Fairy", 7, "second", 0.2, 0.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/743.png", 743),
+    new Pokemon("Rockruff", "Rock", null, 7, "first", 0.5, 9.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/744.png", 744),
+    new Pokemon("Lycanroc (Midday)", "Rock", null, 7, "second", 0.8, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/745.png", 745),
+    new Pokemon("Wishiwashi (Solo)", "Water", null, 7, "first", 0.2, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/746.png", 746),
+    new Pokemon("Mareanie", "Poison", "Water", 7, "first", 0.4, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/747.png", 747),
+    new Pokemon("Toxapex", "Poison", "Water", 7, "second", 0.7, 14.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/748.png", 748),
+    new Pokemon("Mudbray", "Ground", null, 7, "first", 1.0, 110.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/749.png", 749),
+    new Pokemon("Mudsdale", "Ground", null, 7, "second", 2.5, 920.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/750.png", 750),
+    new Pokemon("Dewpider", "Water", "Bug", 7, "first", 0.3, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/751.png", 751),
+    new Pokemon("Araquanid", "Water", "Bug", 7, "second", 1.8, 82.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/752.png", 752),
+    new Pokemon("Fomantis", "Grass", null, 7, "first", 0.3, 1.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/753.png", 753),
+    new Pokemon("Lurantis", "Grass", null, 7, "second", 0.9, 19.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/754.png", 754),
+    new Pokemon("Morelull", "Grass", "Fairy", 7, "first", 0.2, 1.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/755.png", 755),
+    new Pokemon("Shiinotic", "Grass", "Fairy", 7, "second", 1.0, 11.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/756.png", 756),
+    new Pokemon("Salandit", "Poison", "Fire", 7, "first", 0.6, 4.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/757.png", 757),
+    new Pokemon("Salazzle", "Poison", "Fire", 7, "second", 1.2, 22.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/758.png", 758),
+    new Pokemon("Stufful", "Normal", "Fighting", 7, "first", 0.5, 6.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/759.png", 759),
+    new Pokemon("Bewear", "Normal", "Fighting", 7, "second", 2.1, 135.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/760.png", 760),
+    new Pokemon("Bounsweet", "Grass", null, 7, "first", 0.3, 3.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/761.png", 761),
+    new Pokemon("Steenee", "Grass", null, 7, "second", 0.7, 8.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/762.png", 762),
+    new Pokemon("Tsareena", "Grass", null, 7, "third", 1.2, 21.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/763.png", 763),
+    new Pokemon("Comfey", "Fairy", null, 7, "first", 0.1, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/764.png", 764),
+    new Pokemon("Oranguru", "Normal", "Psychic", 7, "first", 1.5, 76.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/765.png", 765),
+    new Pokemon("Passimian", "Fighting", null, 7, "first", 2.0, 82.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/766.png", 766),
+    new Pokemon("Wimpod", "Bug", "Water", 7, "first", 0.5, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/767.png", 767),
+    new Pokemon("Golisopod", "Bug", "Water", 7, "second", 2.0, 108.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/768.png", 768),
+    new Pokemon("Sandygast", "Ghost", "Ground", 7, "first", 0.5, 70.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/769.png", 769),
+    new Pokemon("Palossand", "Ghost", "Ground", 7, "second", 1.3, 250.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/770.png", 770),
+    new Pokemon("Pyukumuku", "Water", null, 7, "first", 0.3, 1.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/771.png", 771),
+    new Pokemon("Type: Null", "Normal", null, 7, "first", 1.9, 120.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/772.png", 772),
+new Pokemon("Silvally", "Normal", null, 7, "second", 2.3, 100.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/773.png", 773),
+new Pokemon("Minior", "Rock", "Flying", 7, "first", 0.3, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/774.png", 774),
+new Pokemon("Komala", "Normal", null, 7, "first", 0.4, 19.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/775.png", 775),
+new Pokemon("Turtonator", "Fire", "Dragon", 7, "first", 2.0, 212.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/776.png", 776),
+new Pokemon("Togedemaru", "Electric", "Steel", 7, "first", 0.3, 3.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/777.png", 777),
+new Pokemon("Mimikyu", "Ghost", "Fairy", 7, "first", 0.2, 0.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/778.png", 778),
+new Pokemon("Bruxish", "Water", "Psychic", 7, "first", 0.9, 19.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/779.png", 779),
+new Pokemon("Drampa", "Normal", "Dragon", 7, "first", 3.0, 185.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/780.png", 780),
+new Pokemon("Dhelmise", "Ghost", "Grass", 7, "first", 3.9, 210.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/781.png", 781),
+new Pokemon("Jangmo-o", "Dragon", null, 7, "first", 0.6, 29.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/782.png", 782),
+new Pokemon("Hakamo-o", "Dragon", "Fighting", 7, "second", 1.2, 47.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/783.png", 783),
+new Pokemon("Kommo-o", "Dragon", "Fighting", 7, "third", 1.6, 78.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/784.png", 784),
+new Pokemon("Tapu Koko", "Electric", "Fairy", 7, "first", 1.8, 20.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/785.png", 785),
+new Pokemon("Tapu Lele", "Psychic", "Fairy", 7, "first", 1.2, 18.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/786.png", 786),
+new Pokemon("Tapu Bulu", "Grass", "Fairy", 7, "first", 1.9, 45.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/787.png", 787),
+new Pokemon("Tapu Fini", "Water", "Fairy", 7, "first", 1.3, 21.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/788.png", 788),
+new Pokemon("Cosmog", "Psychic", null, 7, "first", 0.2, 0.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/789.png", 789),
+new Pokemon("Cosmoem", "Psychic", null, 7, "second", 0.1, 999.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/790.png", 790),
+new Pokemon("Solgaleo", "Psychic", "Steel", 7, "third", 3.4, 230.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/791.png", 791),
+new Pokemon("Lunala", "Psychic", "Ghost", 7, "third", 4.0, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/792.png", 792),
+new Pokemon("Nihilego", "Rock", "Poison", 7, "first", 1.2, 55.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/793.png", 793),
+new Pokemon("Buzzwole", "Bug", "Fighting", 7, "first", 2.4, 333.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/794.png", 794),
+new Pokemon("Pheromosa", "Bug", "Fighting", 7, "first", 1.8, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/795.png", 795),
+new Pokemon("Xurkitree", "Electric", null, 7, "first", 3.8, 100.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/796.png", 796),
+new Pokemon("Celesteela", "Steel", "Flying", 7, "first", 9.2, 999.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/797.png", 797),
+new Pokemon("Kartana", "Grass", "Steel", 7, "first", 0.3, 0.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/798.png", 798),
+new Pokemon("Guzzlord", "Dark", "Dragon", 7, "first", 5.5, 888.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/799.png", 799),
+new Pokemon("Necrozma", "Psychic", null, 7, "first", 2.4, 230.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/800.png", 800),
+new Pokemon("Magearna", "Steel", "Fairy", 7, "first", 1.0, 80.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/801.png", 801),
+new Pokemon("Marshadow", "Fighting", "Ghost", 7, "first", 0.7, 22.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/802.png", 802),
+new Pokemon("Poipole", "Poison", null, 7, "first", 0.6, 1.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/803.png", 803),
+new Pokemon("Naganadel", "Poison", "Dragon", 7, "second", 3.6, 150.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/804.png", 804),
+new Pokemon("Stakataka", "Rock", "Steel", 7, "first", 5.5, 820.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/805.png", 805),
+new Pokemon("Blacephalon", "Fire", "Ghost", 7, "first", 1.8, 13.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/806.png", 806),
+new Pokemon("Zeraora", "Electric", null, 7, "first", 1.5, 44.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/807.png", 807),
+new Pokemon("Meltan", "Steel", null, 8, "first", 0.2, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/808.png", 808),
+new Pokemon("Melmetal", "Steel", null, 8, "second", 2.5, 800.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/809.png", 809),
+new Pokemon("Grookey", "Grass", null, 8, "first", 0.3, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/810.png", 810),
+new Pokemon("Thwackey", "Grass", null, 8, "second", 0.7, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/811.png", 811),
+new Pokemon("Rillaboom", "Grass", null, 8, "third", 2.1, 90.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/812.png", 812),
+new Pokemon("Scorbunny", "Fire", null, 8, "first", 0.3, 4.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/813.png", 813),
+new Pokemon("Raboot", "Fire", null, 8, "second", 0.6, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/814.png", 814),
+new Pokemon("Cinderace", "Fire", null, 8, "third", 1.4, 33.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/815.png", 815),
+new Pokemon("Sobble", "Water", null, 8, "first", 0.3, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/816.png", 816),
+new Pokemon("Drizzile", "Water", null, 8, "second", 0.7, 11.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/817.png", 817),
+new Pokemon("Inteleon", "Water", null, 8, "third", 1.9, 45.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/818.png", 818),
+new Pokemon("Skwovet", "Normal", null, 8, "first", 0.3, 2.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/819.png", 819),
+new Pokemon("Greedent", "Normal", null, 8, "second", 0.6, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/820.png", 820),
+new Pokemon("Rookidee", "Flying", null, 8, "first", 0.2, 1.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/821.png", 821),
+new Pokemon("Corvisquire", "Flying", null, 8, "second", 0.8, 16.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/822.png", 822),
+new Pokemon("Corviknight", "Flying", "Steel", 8, "third", 2.2, 75.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/823.png", 823),
+new Pokemon("Blipbug", "Bug", null, 8, "first", 0.4, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/824.png", 824),
+new Pokemon("Dottler", "Bug", "Psychic", 8, "second", 0.4, 19.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/825.png", 825),
+new Pokemon("Orbeetle", "Bug", "Psychic", 8, "third", 0.4, 40.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/826.png", 826),
+new Pokemon("Nickit", "Dark", null, 8, "first", 0.6, 8.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/827.png", 827),
+new Pokemon("Thievul", "Dark", null, 8, "second", 1.2, 19.9, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/828.png", 828),
+new Pokemon("Gossifleur", "Grass", null, 8, "first", 0.4, 2.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/829.png", 829),
+new Pokemon("Eldegoss", "Grass", null, 8, "second", 0.5, 2.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/830.png", 830),
+new Pokemon("Wooloo", "Normal", null, 8, "first", 0.6, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/831.png", 831),
+new Pokemon("Dubwool", "Normal", null, 8, "second", 1.3, 43.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/832.png", 832),
+new Pokemon("Chewtle", "Water", null, 8, "first", 0.3, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/833.png", 833),
+new Pokemon("Drednaw", "Water", "Rock", 8, "second", 1.0, 115.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/834.png", 834),
+new Pokemon("Yamper", "Electric", null, 8, "first", 0.3, 13.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/835.png", 835),
+new Pokemon("Boltund", "Electric", null, 8, "second", 1.0, 34.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/836.png", 836),
+new Pokemon("Rolycoly", "Rock", null, 8, "first", 0.3, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/837.png", 837),
+new Pokemon("Carkol", "Rock", "Fire", 8, "second", 1.1, 78.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/838.png", 838),
+new Pokemon("Coalossal", "Rock", "Fire", 8, "third", 2.8, 310.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/839.png", 839),
+new Pokemon("Applin", "Grass", "Dragon", 8, "first", 0.2, 0.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/840.png", 840),
+new Pokemon("Flapple", "Grass", "Dragon", 8, "second", 0.3, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/841.png", 841),
+new Pokemon("Appletun", "Grass", "Dragon", 8, "second", 0.4, 13.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/842.png", 842),
+new Pokemon("Silicobra", "Ground", null, 8, "first", 2.2, 7.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/843.png", 843),
+new Pokemon("Sandaconda", "Ground", null, 8, "second", 3.8, 65.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/844.png", 844),
+new Pokemon("Cramorant", "Flying", "Water", 8, "first", 0.8, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/845.png", 845),
+new Pokemon("Arrokuda", "Water", null, 8, "first", 0.5, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/846.png", 846),
+new Pokemon("Barraskewda", "Water", null, 8, "second", 1.3, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/847.png", 847),
+new Pokemon("Toxel", "Electric", "Poison", 8, "first", 0.4, 11.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/848.png", 848),
+new Pokemon("Toxtricity", "Electric", "Poison", 8, "second", 1.6, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/849.png", 849),
+new Pokemon("Sizzlipede", "Fire", "Bug", 8, "first", 0.7, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/850.png", 850),
+new Pokemon("Centiskorch", "Fire", "Bug", 8, "second", 3.0, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/851.png", 851),
+new Pokemon("Clobbopus", "Fighting", null, 8, "first", 0.6, 4.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/852.png", 852),
+new Pokemon("Grapploct", "Fighting", null, 8, "second", 1.6, 39.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/853.png", 853),
+new Pokemon("Sinistea", "Ghost", null, 8, "first", 0.1, 0.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/854.png", 854),
+new Pokemon("Polteageist", "Ghost", null, 8, "second", 0.2, 0.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/855.png", 855),
+new Pokemon("Hatenna", "Psychic", null, 8, "first", 0.4, 3.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/856.png", 856),
+new Pokemon("Hattrem", "Psychic", null, 8, "second", 0.6, 4.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/857.png", 857),
+new Pokemon("Hatterene", "Psychic", "Fairy", 8, "third", 2.1, 5.1, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/858.png", 858),
+new Pokemon("Impidimp", "Dark", "Fairy", 8, "first", 0.4, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/859.png", 859),
+new Pokemon("Morgrem", "Dark", "Fairy", 8, "second", 0.8, 12.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/860.png", 860),
+new Pokemon("Grimmsnarl", "Dark", "Fairy", 8, "third", 1.5, 61.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/861.png", 861),
+new Pokemon("Obstagoon", "Dark", "Normal", 8, "third", 1.6, 46.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/862.png", 862),
+new Pokemon("Perrserker", "Steel", null, 8, "second", 0.8, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/863.png", 863),
+new Pokemon("Cursola", "Ghost", null, 8, "second", 1.0, 0.4, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/864.png", 864),
+new Pokemon("Sirfetch'd", "Fighting", null, 8, "second", 0.8, 117.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/865.png", 865),
+new Pokemon("Mr. Rime", "Ice", "Psychic", 8, "third", 1.5, 58.2, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/866.png", 866),
+new Pokemon("Runerigus", "Ground", "Ghost", 8, "second", 1.6, 66.6, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/867.png", 867),
+new Pokemon("Milcery", "Fairy", null, 8, "first", 0.2, 0.3, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/868.png", 868),
+new Pokemon("Alcremie", "Fairy", null, 8, "second", 0.3, 0.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/869.png", 869),
+new Pokemon("Falinks", "Fighting", null, 8, "first", 3.0, 62.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/870.png", 870),
+new Pokemon("Pincurchin", "Electric", null, 8, "first", 0.3, 1.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/871.png", 871),
+new Pokemon("Snom", "Ice", "Bug", 8, "first", 0.3, 3.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/872.png", 872),
+new Pokemon("Frosmoth", "Ice", "Bug", 8, "second", 1.3, 42.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/873.png", 873),
+new Pokemon("Stonjourner", "Rock", null, 8, "first", 2.5, 520.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/874.png", 874),
+new Pokemon("Eiscue", "Ice", null, 8, "first", 1.4, 89.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/875.png", 875),
+new Pokemon("Indeedee", "Psychic", "Normal", 8, "first", 0.9, 28.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/876.png", 876),
+new Pokemon("Morpeko", "Electric", "Dark", 8, "first", 0.3, 3.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/877.png", 877),
+new Pokemon("Cufant", "Steel", null, 8, "first", 1.2, 100.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/878.png", 878),
+new Pokemon("Copperajah", "Steel", null, 8, "second", 3.0, 650.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/879.png", 879),
+new Pokemon("Dracozolt", "Electric", "Dragon", 8, "first", 1.8, 190.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/880.png", 880),
+new Pokemon("Arctozolt", "Electric", "Ice", 8, "first", 2.3, 150.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/881.png", 881),
+new Pokemon("Dracovish", "Water", "Dragon", 8, "first", 2.3, 215.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/882.png", 882),
+new Pokemon("Arctovish", "Water", "Ice", 8, "first", 2.0, 175.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/883.png", 883),
+new Pokemon("Duraludon", "Steel", "Dragon", 8, "first", 1.8, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/884.png", 884),
+new Pokemon("Dreepy", "Dragon", "Ghost", 8, "first", 0.5, 2.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/885.png", 885),
+new Pokemon("Drakloak", "Dragon", "Ghost", 8, "second", 1.4, 11.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/886.png", 886),
+new Pokemon("Dragapult", "Dragon", "Ghost", 8, "third", 3.0, 50.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/887.png", 887),
+new Pokemon("Zacian", "Fairy", "Steel", 8, "first", 2.8, 110.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/888.png", 888),
+new Pokemon("Zamazenta", "Fighting", "Steel", 8, "first", 2.9, 210.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/889.png", 889),
+new Pokemon("Eternatus", "Poison", "Dragon", 8, "first", 20.0, 950.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/890.png", 890),
+new Pokemon("Kubfu", "Fighting", null, 8, "first", 0.6, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/891.png", 891),
+new Pokemon("Urshifu", "Fighting", "Dark", 8, "second", 1.9, 105.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/892.png", 892),
+new Pokemon("Zarude", "Dark", "Grass", 8, "first", 1.8, 70.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/893.png", 893),
+new Pokemon("Regieleki", "Electric", null, 8, "first", 1.2, 145.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/894.png", 894),
+new Pokemon("Regidrago", "Dragon", null, 8, "first", 2.1, 200.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/895.png", 895),
+new Pokemon("Glastrier", "Ice", null, 8, "first", 2.2, 800.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/896.png", 896),
+new Pokemon("Spectrier", "Ghost", null, 8, "first", 2.0, 44.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/897.png", 897),
+new Pokemon("Calyrex", "Psychic", "Grass", 8, "first", 1.1, 7.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/898.png", 898),
+new Pokemon("Calyrex", "Psychic", "Grass", 8, "first", 1.1, 7.7, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/898.png", 898),
+    new Pokemon("Wyrdeer", "Normal", "Psychic", 8, "first", 1.5, 95, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/899.png", 899),
+    new Pokemon("Kleavor", "Bug", "Rock", 8, "first", 1.8, 95, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/900.png", 900),
+    new Pokemon("Ursaluna", "Ground", "Normal", 8, "first", 2.0, 290, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/901.png", 901),
+    new Pokemon("Basculegion", "Water", "Ghost", 8, "first", 2.5, 110, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/902.png", 902),
+    new Pokemon("Sneasler", "Fighting", "Poison", 8, "first", 1.4, 43, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/903.png", 903),
+    new Pokemon("Overqwil", "Dark", "Poison", 8, "first", 1.0, 45, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/904.png", 904),
+    new Pokemon("Enamorus", "Fairy", "Flying", 8, "first", 1.2, 30, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/905.png", 905),
+    new Pokemon("Sprigatito", "Grass", "", 9, "first", 0.3, 4.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/906.png", 906),
+new Pokemon("Floragato", "Grass", "", 9, "evolution", 1.0, 18.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/907.png", 907),
+new Pokemon("Meowscarada", "Grass", "Dark", 9, "evolution", 1.5, 31, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/908.png", 908),
+new Pokemon("Fuecoco", "Fire", "", 9, "first", 0.4, 9.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/909.png", 909),
+new Pokemon("Crocalor", "Fire", "", 9, "evolution", 1.1, 22.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/910.png", 910),
+new Pokemon("Skeledirge", "Fire", "Ghost", 9, "evolution", 1.6, 75.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/911.png", 911),
+new Pokemon("Quaxly", "Water", "", 9, "first", 0.6, 7.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/912.png", 912),
+new Pokemon("Quaxwell", "Water", "", 9, "evolution", 1.1, 26.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/913.png", 913),
+new Pokemon("Quaquaval", "Water", "Fighting", 9, "evolution", 1.5, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/914.png", 914),
+new Pokemon("Lechonk", "Normal", "", 9, "first", 0.3, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/915.png", 915),
+new Pokemon("Oinkologne", "Normal", "Fairy", 9, "evolution", 1.0, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/916.png", 916),
+new Pokemon("Tinkaton", "Fairy", "Steel", 9, "first", 0.6, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/917.png", 917),
+new Pokemon("Tinkatuff", "Fairy", "Steel", 9, "evolution", 0.8, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/918.png", 918),
+new Pokemon("Tinkituff", "Fairy", "Steel", 9, "evolution", 1.2, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/919.png", 919),
+new Pokemon("Pawmi", "Electric", "", 9, "first", 0.3, 2.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/920.png", 920),
+new Pokemon("Pawmo", "Electric", "Fighting", 9, "evolution", 0.7, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/921.png", 921),
+new Pokemon("Pawmot", "Electric", "Fighting", 9, "evolution", 1.2, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/922.png", 922),
+new Pokemon("Lechonk", "Normal", "", 9, "first", 0.3, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/923.png", 923),
+new Pokemon("Oinkologne", "Normal", "Fairy", 9, "evolution", 1.0, 40.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/924.png", 924),
+new Pokemon("Yungoos", "Normal", "", 9, "first", 0.5, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/925.png", 925),
+new Pokemon("Gumshoos", "Normal", "", 9, "evolution", 1.0, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/926.png", 926),
+new Pokemon("Dunsparce", "Normal", "", 9, "first", 1.2, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/927.png", 927),
+new Pokemon("Dudunsparce", "Normal", "", 9, "evolution", 2.0, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/928.png", 928),
+new Pokemon("Fidough", "Fairy", "", 9, "first", 0.3, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/929.png", 929),
+new Pokemon("Doughy", "Fairy", "", 9, "evolution", 0.6, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/930.png", 930),
+new Pokemon("Shroodle", "Poison", "Fairy", 9, "first", 0.4, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/931.png", 931),
+new Pokemon("Grumpig", "Fairy", "Poison", 9, "first", 0.8, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/932.png", 932),
+new Pokemon("Grimmsnarl", "Fairy", "Dark", 9, "first", 1.5, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/933.png", 933),
+new Pokemon("Carnivine", "Grass", "", 9, "first", 1.3, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/934.png", 934),
+new Pokemon("Morgrem", "Fairy", "Dark", 9, "evolution", 1.0, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/935.png", 935),
+new Pokemon("Sableye", "Dark", "Fairy", 9, "first", 1.0, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/936.png", 936),
+new Pokemon("Gumshoos", "Normal", "", 9, "first", 0.7, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/937.png", 937),
+new Pokemon("Snipsta", "Fairy", "Poison", 9, "first", 0.7, 15.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/938.png", 938),
+new Pokemon("Snipfin", "Poison", "Water", 9, "first", 0.4, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/939.png", 939),
+new Pokemon("Donphan", "Ground", "", 9, "first", 1.0, 20.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/940.png", 940),
+new Pokemon("Gumshoos", "Normal", "", 9, "first", 1.0, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/941.png", 941),
+new Pokemon("Arbo", "Fire", "Electric", 9, "first", 0.5, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/942.png", 942),
+new Pokemon("Sandshrew", "Fire", "Steel", 9, "first", 1.2, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/943.png", 943),
+new Pokemon("Bonsly", "Ground", "Fire", 9, "first", 1.5, 7.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/944.png", 944),
+new Pokemon("Jotaro", "Psychic", "Fire", 9, "first", 1.5, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/945.png", 945),
+new Pokemon("Ruki", "Normal", "Dark", 9, "first", 1.5, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/946.png", 946),
+new Pokemon("Toxapex", "Poison", "Water", 9, "first", 1.2, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/947.png", 947),
+new Pokemon("Pinci", "Poison", "Fairy", 9, "first", 0.5, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/948.png", 948),
+new Pokemon("Ales", "Fairy", "", 9, "first", 0.5, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/949.png", 949),
+new Pokemon("Voltorb", "Electric", "Ghost", 9, "first", 0.5, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/950.png", 950),
+new Pokemon("Cherim", "Normal", "Fairy", 9, "first", 0.5, 3.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/951.png", 951),
+new Pokemon("Flamigo", "Fighting", "Flying", 9, "first", 1.0, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/956.png", 956),
+new Pokemon("Cigaru", "Poison", "Fire", 9, "first", 0.9, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/957.png", 957),
+new Pokemon("Aromatisse", "Fairy", "", 9, "first", 1.2, 18.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/958.png", 958),
+new Pokemon("Lokix", "Bug", "Dark", 9, "first", 1.0, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/959.png", 959),
+new Pokemon("Rolycoly", "Rock", "", 9, "first", 0.4, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/960.png", 960),
+new Pokemon("Carkol", "Rock", "Fire", 9, "evolution", 0.8, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/961.png", 961),
+new Pokemon("Coalossal", "Rock", "Fire", 9, "evolution", 1.6, 250.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/962.png", 962),
+new Pokemon("Tinkaton", "Fairy", "Steel", 9, "first", 0.6, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/963.png", 963),
+new Pokemon("Tinkatuff", "Fairy", "Steel", 9, "evolution", 0.8, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/964.png", 964),
+new Pokemon("Tinkituff", "Fairy", "Steel", 9, "evolution", 1.2, 25.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/965.png", 965),
+new Pokemon("Wugtrio", "Water", "", 9, "first", 0.6, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/966.png", 966),
+new Pokemon("Dunsparce", "Normal", "", 9, "first", 1.2, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/967.png", 967),
+new Pokemon("Dudunsparce", "Normal", "", 9, "evolution", 2.0, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/968.png", 968),
+new Pokemon("Fidough", "Fairy", "", 9, "first", 0.3, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/969.png", 969),
+new Pokemon("Fidough", "Fairy", "", 9, "first", 0.4, 9.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/970.png", 970),
+new Pokemon("Shroodle", "Poison", "Fairy", 9, "first", 0.4, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/971.png", 971),
+new Pokemon("Grumpig", "Fairy", "Poison", 9, "first", 0.8, 9.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/972.png", 972),
+new Pokemon("Grimmsnarl", "Fairy", "Dark", 9, "first", 1.5, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/973.png", 973),
+new Pokemon("Carnivine", "Grass", "", 9, "first", 1.3, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/974.png", 974),
+new Pokemon("Morgrem", "Fairy", "Dark", 9, "evolution", 1.0, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/975.png", 975),
+new Pokemon("Sableye", "Dark", "Fairy", 9, "first", 1.0, 30.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/976.png", 976),
+new Pokemon("Gumshoos", "Normal", "", 9, "first", 0.7, 5.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/977.png", 977),
+new Pokemon("Snipsta", "Fairy", "Poison", 9, "first", 0.7, 15.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/978.png", 978),
+new Pokemon("Snipfin", "Poison", "Water", 9, "first", 0.4, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/979.png", 979),
+new Pokemon("Donphan", "Ground", "", 9, "first", 1.0, 20.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/980.png", 980),
+new Pokemon("Gumshoos", "Normal", "", 9, "first", 1.0, 15.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/981.png", 981),
+new Pokemon("Arbo", "Fire", "Electric", 9, "first", 0.5, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/982.png", 982),
+new Pokemon("Sandshrew", "Fire", "Steel", 9, "first", 1.2, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/983.png", 983),
+new Pokemon("Bonsly", "Ground", "Fire", 9, "first", 1.5, 7.8, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/984.png", 984),
+new Pokemon("Jotaro", "Psychic", "Fire", 9, "first", 1.5, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/985.png", 985),
+new Pokemon("Ruki", "Normal", "Dark", 9, "first", 1.5, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/986.png", 986),
+new Pokemon("Toxapex", "Poison", "Water", 9, "first", 1.2, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/987.png", 987),
+new Pokemon("Pinci", "Poison", "Fairy", 9, "first", 0.5, 8.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/988.png", 988),
+new Pokemon("Ales", "Fairy", "", 9, "first", 0.5, 7.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/989.png", 989),
+new Pokemon("Voltorb", "Electric", "Ghost", 9, "first", 0.5, 6.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/990.png", 990),
+new Pokemon("Cherim", "Normal", "Fairy", 9, "first", 0.5, 3.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/991.png", 991),
+new Pokemon("Cherim", "Normal", "Fairy", 9, "first", 0.8, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/992.png", 992),
+new Pokemon("Yungoos", "Normal", "", 9, "first", 0.7, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/993.png", 993),
+new Pokemon("Torkoal", "Fire", "", 9, "first", 1.0, 35.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/994.png", 994),
+new Pokemon("Mimikyu", "Fairy", "Ghost", 9, "first", 0.5, 5.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/995.png", 995),
+new Pokemon("Zorua", "Dark", "", 9, "first", 0.7, 12.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/996.png", 996),
+new Pokemon("Zoroark", "Dark", "", 9, "evolution", 1.6, 81.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/997.png", 997),
+new Pokemon("Farigiraf", "Normal", "Psychic", 9, "first", 1.5, 45.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/998.png", 998),
+new Pokemon("Gholdengo", "Ghost", "Steel", 9, "first", 1.3, 80.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/999.png", 999),
+new Pokemon("Wormadam", "Bug", "Steel", 9, "first", 1.0, 20.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1000.png", 1000),
+new Pokemon("Ame", "Bug", "Fire", 9, "first", 0.5, 8.5, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1001.png", 1001),
+new Pokemon("Murkrow", "Dark", "Flying", 9, "first", 0.5, 10.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1002.png", 1002),
+new Pokemon("Tropius", "Grass", "Flying", 9, "first", 1.5, 60.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1003.png", 1003),
+new Pokemon("Ursaring", "Normal", "", 9, "first", 1.8, 130.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1004.png", 1004),
+new Pokemon("Dunsparce", "Normal", "", 9, "first", 1.2, 14.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1005.png", 1005),
+new Pokemon("Iron Bundle", "Ice", "Water", 9, "first", 1.2, 18.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1006.png", 1006),
+new Pokemon("Iron Hands", "Fighting", "Electric", 9, "first", 1.5, 110.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1007.png", 1007),
+new Pokemon("Iron Thorns", "Rock", "Electric", 9, "first", 2.0, 120.0, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/1008.png", 1008)
+
+
+
+];
+
+
+
+        let answer;
+        let guesses = 0;
+        const maxGuesses = 8;
+
+        function getTodaysPokemon() {
+            const today = new Date().toISOString().split('T')[0];
+            const storedDate = localStorage.getItem('pokemonDate');
+            const storedPokemon = localStorage.getItem('pokemonAnswer');
+
+            if (storedDate === today && storedPokemon) {
+                answer = JSON.parse(storedPokemon);
+            } else {
+                answer = pokemonList[Math.floor(Math.random() * pokemonList.length)];
+                localStorage.setItem('pokemonDate', today);
+                localStorage.setItem('pokemonAnswer', JSON.stringify(answer));
+            }
+        }
+
+        function populateSuggestions() {
+        const datalist = document.getElementById("pokemonSuggestions");
+
+        // Sort Pokémon list alphabetically by name
+        const sortedPokemonList = pokemonList.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Clear existing suggestions (if any)
+        datalist.innerHTML = "";
+
+        // Add Pokémon names as options
+        sortedPokemonList.forEach(pokemon => {
+            let option = document.createElement("option");
+            option.value = pokemon.name; // Set the Pokémon name as the value
+            datalist.appendChild(option);
+        });
+    }
+        
+
+    function makeGuess() {
+    let guessInput = document.getElementById("guessInput").value.trim().toLowerCase();
+    let guessedPokemon = pokemonList.find(p => p.name.toLowerCase() === guessInput);
+
+    if (!guessedPokemon) {
+        alert("Invalid Pokémon name. Please try again.");
+        return;
+    }
+
+    guesses++;
+    displayGuess(guessedPokemon);
+
+    // Update the guess tracker
+    const guessesLeft = maxGuesses - guesses;
+    document.getElementById("guessTracker").innerText = `Guesses Left: ${guessesLeft}`;
+
+    const resultImage = document.getElementById("resultImage");
+    
+    if (guessedPokemon.name === answer.name) {
+        document.getElementById("endgameMessage").innerText = "Congratulations! You guessed the correct Pokémon!";
+        document.getElementById("correctPokemon").innerHTML = `The correct Pokémon was <strong>${answer.name}</strong>.`;
+        resultImage.src = "https://static1.thegamerimages.com/wordpress/wp-content/uploads/2022/09/The-Pokemon-Ludicolo-outdoors-and-smiling.jpg";
+        resultImage.style.display = "block";
+        showOverlay("endgameOverlay");
+    } else if (guesses >= maxGuesses) {
+        document.getElementById("endgameMessage").innerText = "Game Over!";
+        document.getElementById("correctPokemon").innerHTML = `The correct Pokémon was <strong>${answer.name}</strong>.`;
+        resultImage.src = "https://static0.gamerantimages.com/wordpress/wp-content/uploads/2020/10/Untitled-design-2020-10-22T113954.242.jpg";
+        resultImage.style.display = "block";
+        showOverlay("endgameOverlay");
+    }
+
+    // Clear the search bar
+    document.getElementById("guessInput").value = "";
+}
+
+
+
+        function displayGuess(pokemon) {
+        let resultsContainer = document.getElementById("results");
+        let resultBox = document.createElement("div");
+        resultBox.classList.add("result-box");
+
+        function createSpan(content, isMatch, isClose, isWeakness, isGuessedWeakness) {
+    let span = document.createElement("span");
+
+    // Check if the content is "Grass" and replace it with an image
+    if (content === "Grass") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/Pp1BK6m_bXUAAAAe/grass-type-pokemon-logo.png";
+        img.alt = "Grass Type";
+        img.style.width = "80px"; // Increased size
+        img.style.height = "auto";
+        span.appendChild(img);
+    } 
+    // Check if the content is "Fire" and replace it with an image
+    else if (content === "Fire") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/U3fdIlx3GdgAAAAe/fire-type-pokemon-logo.png";
+        img.alt = "Fire Type";
+        img.style.width = "80px"; // Increased size
+        img.style.height = "auto";
+        span.appendChild(img);
+    } 
+    else if (content === "Water") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/gd7g1xIIWQkAAAAe/water-type-pokemon-logo.png";
+        img.alt = "Water Type";
+        img.style.width = "80px"; // Increased size
+        img.style.height = "auto";
+        span.appendChild(img);
+    } 
+    else if (content === "Poison") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/OJwl2PdHFusAAAAe/poison-type-pokemon-logo.png";
+        img.alt = "Poison Type";
+        img.style.width = "80px"; // Increased size
+        img.style.height = "auto";
+        span.appendChild(img);
+    } 
+    else if (content === "Electric") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/EJaEf7Hya3wAAAAe/electric-type-pokemon-logo.png";
+        img.alt = "Electric Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Rock") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/7jzDB0jysK8AAAAe/rock-type-pokemon-logo.png";
+        img.alt = "Rock Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Ground") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/EkU93fMIYdIAAAAe/ground-type-pokemon-logo.png";
+        img.alt = "Ground Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Flying") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/dd-Vkm1c7CkAAAAe/flying-type-pokemon-logo.png";
+        img.alt = "Flying Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Bug") {
+        let img = document.createElement("img");
+        img.src = "https://media1.tenor.com/m/LOWHtxjlqi4AAAAC/bug-type-pokemon-logo.gif";
+        img.alt = "Bug Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Psychic") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/FwkVjBM7B-AAAAAe/psychic-type-pokemon-logo.png";
+        img.alt = "Psychic Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Ice") {
+        let img = document.createElement("img");
+        img.src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4aVVcArVS2GPvgXwAQxg5z80Fn3g_K_vyiA&s";
+        img.alt = "Ice Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Dragon") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/xS9BWAGgakAAAAAM/dragon-type-pokemon-logo.gif";
+        img.alt = "Dragon Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Dark") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/MhRcmqHS0_IAAAAe/dark-type-pokemon-logo.png";
+        img.alt = "Dark Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Steel") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/t8PuUW1QS6oAAAAe/steel-type-pokemon-logo.png";
+        img.alt = "Steel Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } else if (content === "Fairy") {
+        let img = document.createElement("img");
+        img.src = "https://ih1.redbubble.net/image.2752227159.5298/raf,360x360,075,t,fafafa:ca443f4786.u1.jpg";
+        img.alt = "Fairy Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    } 
+ else if (content === "Ghost") {
+        let img = document.createElement("img");
+        img.src = "https://media.tenor.com/EGnT-6IvSnEAAAAe/ghost-type-pokemon-logo.png"; // Placeholder image for Ghost type
+        img.alt = "Ghost Type";
+        img.style.width = "80px";
+        img.style.height = "auto";
+        span.appendChild(img);
+    }
+    else if (content === "Fighting") {
+    let img = document.createElement("img");
+    img.src = "https://media.tenor.com/Cm4wXNb0glEAAAAM/fighting-type-pokemon-logo.gif"; // Replace with actual Fighting type logo URL
+    img.alt = "Fighting Type";
+    img.style.width = "80px";
+    img.style.height = "auto";
+    span.appendChild(img);
+}else if (content === "Normal") {
+    let img = document.createElement("img");
+    img.src = "https://media.tenor.com/D6K8HiuQs-QAAAAe/normal-type-pokemon-logo.png"; // Replace with actual Normal type logo URL
+    img.alt = "Normal Type";
+    img.style.width = "80px";
+    img.style.height = "auto";
+    span.appendChild(img);
+}else {
+        // Default case: display the text content
+        span.innerHTML = content;
+    }
+
+    if (isMatch) {
+        span.classList.add("match");
+    } else if (isGuessedWeakness) {
+        span.classList.add("guessed-weakness-match");
+    } else if (isWeakness) {
+        span.classList.add("weakness-match");
+    } else if (isClose) {
+        span.classList.add("close-match"); // Yellow box for close matches
+    }
+
+    return span;
+}
+
+        function isWeakness(type1, type2) {
+            return (
+                typeWeaknesses[type1] && typeWeaknesses[type1].includes(type2)
+            );
+        }
+
+        let img = document.createElement("img");
+        img.src = pokemon.image;
+        img.alt = pokemon.name;
+
+        let nameSpan = createSpan(pokemon.name, pokemon.name === answer.name, false);
+        let type1Span = createSpan(
+            pokemon.type1,
+            pokemon.type1 === answer.type1 || pokemon.type1 === answer.type2,
+            false,
+            isWeakness(pokemon.type1, answer.type1) || isWeakness(pokemon.type1, answer.type2),
+            isWeakness(answer.type1, pokemon.type1) || isWeakness(answer.type2, pokemon.type1)
+        );
+        let type2Span = createSpan(
+            pokemon.type2 ? pokemon.type2 : "-",
+            pokemon.type2 && (pokemon.type2 === answer.type1 || pokemon.type2 === answer.type2),
+            false,
+            pokemon.type2 && (isWeakness(pokemon.type2, answer.type1) || isWeakness(pokemon.type2, answer.type2)),
+            pokemon.type2 && (isWeakness(answer.type1, pokemon.type2) || isWeakness(answer.type2, pokemon.type2))
+        );
+        let genSpan = createSpan(
+    pokemon.gen,
+    pokemon.gen === answer.gen,
+    Math.abs(pokemon.gen - answer.gen) === 1 // Highlight if within one generation
+);
+        let evolutionSpan = createSpan(
+    pokemon.evolution, 
+    pokemon.evolution === answer.evolution, 
+    Math.abs(pokemon.evolution - answer.evolution) === 1  // This will be true if evolution difference is 1
+);
+        let heightSpan = createSpan(
+            pokemon.height + "m",
+            pokemon.height === answer.height,
+            Math.abs(pokemon.height - answer.height) <= 0.5
+        );
+        let weightSpan = createSpan(
+            pokemon.weight + "kg",
+            pokemon.weight === answer.weight,
+            Math.abs(pokemon.weight - answer.weight) <= 10
+        );
+        
+
+        resultBox.appendChild(img);
+        resultBox.appendChild(nameSpan);
+        resultBox.appendChild(type1Span);
+        resultBox.appendChild(type2Span);
+        resultBox.appendChild(genSpan);
+        resultBox.appendChild(evolutionSpan);
+        resultBox.appendChild(heightSpan);
+        resultBox.appendChild(weightSpan);
+
+        resultsContainer.appendChild(resultBox);
+    }
+    
+
+        function displayInitialHeaders() {
+        let resultsContainer = document.getElementById("results");
+        let resultBox = document.createElement("div");
+        resultBox.classList.add("result-box");
+
+        const headers = ["Image", "Name", "Type", "Type", "Gen", "Evolution", "Height", "Weight"];
+        headers.forEach((header, index) => {
+            let span = document.createElement("span");
+            span.innerHTML = header;
+            if (index === 0) {
+                span.classList.add("image-header");
+            }
+            resultBox.appendChild(span);
+        });
+
+        resultsContainer.prepend(resultBox);
+    }
+
+        // Populate suggestions and display initial headers on page load
+        window.onload = function() {
+            getTodaysPokemon();
+            populateSuggestions();
+            displayInitialHeaders();
+        };
+        function showOverlay(overlayId) {
+        document.getElementById(overlayId).style.display = "flex";
+    }
+
+    // Close overlay
+    function closeOverlay(overlayId) {
+        document.getElementById(overlayId).style.display = "none";
+    }
+
+    // Restart the game
+    function restartGame() {
+        location.reload();
+    }
+
+    // Show rules overlay on button click
+    document.getElementById("rulesButton").addEventListener("click", function () {
+        showOverlay("rulesOverlay");
+    });
+
+    // Modify makeGuess to show endgame overlay
+
+
+    // Populate suggestions and display initial headers on page load
+    window.onload = function () {
+        getTodaysPokemon();
+        populateSuggestions();
+        displayInitialHeaders();
+
+        // Show the rules overlay when the page loads
+        showOverlay("rulesOverlay");
+    };
+        
+    </script>
+
+</body>
+</html>
