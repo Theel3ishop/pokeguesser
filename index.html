@@ -402,27 +402,30 @@ h1 {
     }
 }
 @media (max-width: 400px) {
-    .result-box {
-        flex-direction: row;
-        flex-wrap: wrap;
+    .guide-box {
+        font-size: 10px; /* Smaller text */
+        flex-wrap: wrap; /* Allow wrapping if needed */
     }
 
-    .result-box span {
-        flex: 1;
-        text-align: center;
-        font-size: 10px; /* Make text smaller */
+    .guide-box span {
+        white-space: normal;  /* Allow text to wrap */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 50px;       /* Reduce min-width for small screens */
+        font-size: 10px;       /* Match smaller font */
     }
+}
 
     .guide-box span {
         font-size: 10px; /* Make guide box text smaller too */
     }
 
     .result-box img {
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
         margin-bottom: 5px;
     }
-}
+
 
 
 
