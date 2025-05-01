@@ -402,22 +402,29 @@ h1 {
     }
 }
 @media (max-width: 400px) {
+    .result-box {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .result-box span {
+        flex: 1;
+        text-align: center;
+        font-size: 10px; /* Make text smaller */
+    }
+
     .guide-box {
-        font-size: 10px; /* Smaller text */
-        flex-wrap: wrap; /* Allow wrapping if needed */
+        font-size: 10px;
+        flex-wrap: nowrap; /* Keep horizontal format */
+        overflow-x: auto;  /* Allow horizontal scrolling if needed */
     }
 
     .guide-box span {
-        white-space: normal;  /* Allow text to wrap */
+        white-space: nowrap;   /* Prevent wrapping */
         overflow: hidden;
         text-overflow: ellipsis;
-        min-width: 50px;       /* Reduce min-width for small screens */
-        font-size: 10px;       /* Match smaller font */
-    }
-}
-
-    .guide-box span {
-        font-size: 10px; /* Make guide box text smaller too */
+        min-width: 60px;       /* Shrink width to fit */
+        font-size: 10px;
     }
 
     .result-box img {
@@ -425,7 +432,7 @@ h1 {
         height: 10px;
         margin-bottom: 5px;
     }
-
+}
 
 
 
