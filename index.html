@@ -415,21 +415,22 @@ h1 {
 
     .guide-box {
         font-size: 10px;
-        flex-wrap: nowrap; /* Keep horizontal format */
-        overflow-x: auto;  /* Allow horizontal scrolling if needed */
+        padding: 5px;
     }
 
     .guide-box span {
-        white-space: nowrap;   /* Prevent wrapping */
-        overflow: hidden;
-        text-overflow: ellipsis;
-        min-width: 60px;       /* Shrink width to fit */
+        padding: 2px;
         font-size: 10px;
+        min-width: 40px;
+    }
+
+    .guide-box span:nth-child(6) {
+        min-width: 60px;
     }
 
     .result-box img {
-        width: 10px;
-        height: 10px;
+        width: 20px;
+        height: 20px;
         margin-bottom: 5px;
     }
 }
