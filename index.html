@@ -34,16 +34,31 @@ h1 {
     max-width: 1200px;
     margin: 0 auto;
 }
-#pokemonSuggestions {
+.search-container {
+    position: relative;
+    width: 300px;
+}
+
+.suggestions {
     position: absolute;
-    top: 100%; /* Position directly below the input */
+    top: 100%;
     left: 0;
-    width: 100%; /* Match the width of the input */
+    width: 100%;
     background-color: white;
     border: 1px solid #ddd;
-    z-index: 1; /* Ensure it appears below the input */
-    max-height: 200px; /* Optional: limit height */
-    overflow-y: auto; /* Optional: add scroll for long lists */
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    display: none; /* Hide initially */
+}
+
+.suggestions div {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.suggestions div:hover {
+    background-color: #f0f0f0;
 }
 
 /* Results section */
@@ -155,13 +170,24 @@ h1 {
 /* Input container */
 .input-container {
     display: flex;
-    align-items: center;
     justify-content: center;
-    flex-wrap: wrap; /* Allow elements to wrap on small screens */
-    margin-bottom: 20px;
-    gap: 10px; /* Add space between elements */
+    align-items: center;
+    gap: 40px; /* Increase this value as needed */
+    flex-wrap: wrap;
+}
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    cursor: pointer;
 }
 
+.suggestion-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
 /* Guess tracker */
 .guess-tracker {
     font-size: 16px;
@@ -367,14 +393,19 @@ h1 {
     <div class="container">
         <div class="input-container">
             <div class="guess-tracker" id="guessTracker">Guesses Left: 8</div>
-            <input type="text" id="guessInput" list="pokemonSuggestions" placeholder="Enter Pokémon name" autocomplete="off">
+            <div class="search-container">
+                <input type="text" id="guessInput" placeholder="Enter Pokémon name" autocomplete="off">
+                <div id="suggestionsBox" class="suggestions"></div>
+            </div>
+
             <button id="guessButton" onclick="makeGuess()">Submit</button>
-            <datalist id="pokemonSuggestions">
-                <!-- Options will be populated by JavaScript -->
+            
             </datalist>
         </div>
         <div class="results-container" id="results"></div>
     </div>
+
+    
 
     <!-- Rules Overlay -->
     <div id="rulesOverlay" class="overlay">
@@ -1401,23 +1432,47 @@ new Pokemon("Calyrex", "Psychic", "Grass", 8, "first", 1.1, 7.7, "https://raw.gi
                 localStorage.setItem('pokemonAnswer', JSON.stringify(answer));
             }
         }
+        const input = document.getElementById("guessInput");
+const suggestionsBox = document.getElementById("suggestionsBox");
 
-        function populateSuggestions() {
-        const datalist = document.getElementById("pokemonSuggestions");
-
-        // Sort Pokémon list alphabetically by name
-        const sortedPokemonList = pokemonList.sort((a, b) => a.name.localeCompare(b.name));
-
-        // Clear existing suggestions (if any)
-        datalist.innerHTML = "";
-
-        // Add Pokémon names as options
-        sortedPokemonList.forEach(pokemon => {
-            let option = document.createElement("option");
-            option.value = pokemon.name; // Set the Pokémon name as the value
-            datalist.appendChild(option);
-        });
+input.addEventListener("input", function () {
+    const value = this.value.toLowerCase();
+    suggestionsBox.innerHTML = "";
+    if (!value) {
+        suggestionsBox.style.display = "none";
+        return;
     }
+
+    const matches = pokemonList
+        .filter(p => p.name.toLowerCase().startsWith(value))
+        .slice(0, 10); // Limit suggestions
+
+    matches.forEach(pokemon => {
+        const div = document.createElement("div");
+        div.classList.add("suggestion-item");
+
+        const img = document.createElement("img");
+        img.src = pokemon.image; // Make sure this is a valid image URL
+        img.alt = pokemon.name;
+        img.classList.add("suggestion-img");
+
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = pokemon.name;
+
+        div.appendChild(img);
+        div.appendChild(nameSpan);
+
+        div.addEventListener("click", () => {
+            input.value = pokemon.name;
+            suggestionsBox.innerHTML = "";
+            suggestionsBox.style.display = "none";
+        });
+
+        suggestionsBox.appendChild(div);
+    });
+
+    suggestionsBox.style.display = matches.length ? "block" : "none";
+});
         
 
     function makeGuess() {
