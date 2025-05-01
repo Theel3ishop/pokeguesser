@@ -16,6 +16,42 @@
     height: 100vh; /* Ensures the body takes full height of the screen */
     margin: 0;
 }
+.guide-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+}
+
+.guide-box span {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 5px;
+    border-right: 1px solid #ddd;
+    white-space: nowrap;
+    overflow: visible; /* Let full text show */
+    text-overflow: unset;
+}
+
+/* Remove border from last column */
+.guide-box span:last-child {
+    border-right: none;
+}
+
+/* Give extra space to Evolution */
+.guide-box span:nth-child(6) {
+    flex: 1.2 1 0; /* Slightly more space */
+}
 
 /* Header */
 h1 {
@@ -367,18 +403,24 @@ h1 {
 }
 @media (max-width: 400px) {
     .result-box {
-        flex-direction: row; /* Ensure horizontal layout on smaller screens */
-        flex-wrap: wrap; /* Allow wrapping if needed */
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 
     .result-box span {
-        flex: 1; /* Ensure spans take equal space */
+        flex: 1;
         text-align: center;
+        font-size: 10px; /* Make text smaller */
+    }
+
+    .guide-box span {
+        font-size: 10px; /* Make guide box text smaller too */
     }
 
     .result-box img {
-        width: 20px; /* Adjust image size for smaller screens */
-        height: auto;
+        width: 20px;
+        height: 20px;
+        margin-bottom: 5px;
     }
 }
 
@@ -402,8 +444,19 @@ h1 {
             
             </datalist>
         </div>
+        <div class="guide-box">
+            <span></span>
+            <span>Name</span>
+            <span>Type 1</span>
+            <span>Type 2</span>
+            <span>Gen</span>
+            <span>Evolution</span>
+            <span>Height</span>
+            <span>Weight</span>
+        </div>
         <div class="results-container" id="results"></div>
     </div>
+    
 
     
 
