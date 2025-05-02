@@ -416,27 +416,34 @@ h1 {
     }
 
     .guide-box {
-        font-size: 8px;
-        padding: 2px;
+        font-size: 9px;               /* Smaller overall text */
+        padding: 4px;
+        border: 2px solid #bbb;       /* Thicker border */
     }
 
     .guide-box span {
-        padding: 1px;
-        font-size: 7px;
-        min-width: 0;
-        flex: 1;
-        white-space: nowrap;        /* Keep text in one line */
-        overflow: hidden;           /* Hide overflow text */
-        text-overflow: ellipsis;    /* Show "..." if it's too long */
+        padding: 2px;
+        font-size: 8px;               /* Smaller individual span text */
+        min-width: 45px;              /* Maintain enough room for short words */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border-right: 1px solid #ddd;
+    }
+
+    .guide-box span:last-child {
+        border-right: none;
     }
 
     .guide-box span:nth-child(6) {
-        flex: 1.5;                  /* Give Evolution extra space */
+        flex: 1.5;
+        min-width: 60px;              /* Ensure "Evolution" can fit */
     }
 
     .guide-box .optional-gap {
-        display: none;
+        display: none;                /* Remove first gap on small screens */
     }
+
     .result-box img {
         width: 20px;
         height: 20px;
