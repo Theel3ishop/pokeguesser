@@ -407,12 +407,16 @@ h1 {
     .result-box {
         flex-direction: row;
         flex-wrap: wrap;
+        padding: 4px;
     }
 
     .result-box span {
         flex: 1;
         text-align: center;
-        font-size: 10px; /* Make text smaller */
+        font-size: 8px;       /* Smaller text */
+        padding: 2px 4px;     /* Reduced padding */
+        min-width: 50px;      /* Prevent collapse */
+        white-space: nowrap;  /* Keep items on one line */
     }
 
     .guide-box {
