@@ -416,24 +416,22 @@ h1 {
     }
 
     .guide-box {
-        font-size: 9px;
+        font-size: 8px;
         padding: 2px;
-        overflow: visible;
     }
 
     .guide-box span {
-        padding: 2px;
-        font-size: 8px;
-        flex: 1;
+        padding: 1px;
+        font-size: 7px;
         min-width: 0;
-        white-space: normal;           /* Allow wrapping */
-        overflow: visible;             /* Don’t hide overflow */
-        text-overflow: initial;        /* No ellipsis */
-        word-break: break-word;        /* Wrap long words */
+        flex: 1;
+        white-space: nowrap;        /* Keep text in one line */
+        overflow: hidden;           /* Hide overflow text */
+        text-overflow: ellipsis;    /* Show "..." if it's too long */
     }
 
     .guide-box span:nth-child(6) {
-        flex: 1.3;
+        flex: 1.5;                  /* Give Evolution extra space */
     }
 
     .guide-box .optional-gap {
