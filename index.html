@@ -422,12 +422,10 @@ h1 {
         margin: 10px auto; /* Adjust margin for spacing */
         border-width: 2px; /* Optional: Make the border thicker */
     }
-    .result-box img:not(:first-child) {
-        width: 3px; /* Keep other images smaller */
-        height: 3px;
-        margin-bottom: 5px;
+    .result-box img:first-child {
+        width: 30px; /* Larger size for the first image */
+        height: auto;
     }
-    
 
     .guide-box span {
         padding: 5px;
@@ -448,11 +446,7 @@ h1 {
     .guide-box .optional-gap {
         display: none;
     }
-    .result-box img {
-        width: 20px;
-        height: 20px;
-        margin-bottom: 5px;
-    }
+    
     .result-box span img {
         width: 5px; /* Smaller size for type images */
         height: auto;
