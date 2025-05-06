@@ -405,7 +405,7 @@ h1 {
 }
 @media (max-width: 400px) {
     .result-box {
-        flex-direction: column; /* Stack items vertically */
+        flex-direction: row; /* Stack items vertically */
         align-items: center;
         padding: 5px;
     }
@@ -421,6 +421,11 @@ h1 {
         padding: 10px; /* Add more padding */
         margin: 10px auto; /* Adjust margin for spacing */
         border-width: 2px; /* Optional: Make the border thicker */
+    }
+    .result-box img:not(:first-child) {
+        width: 20px; /* Keep other images smaller */
+        height: auto;
+        margin-bottom: 5px;
     }
 
     .guide-box span {
@@ -443,8 +448,8 @@ h1 {
         display: none;
     }
     .result-box img {
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
         margin-bottom: 5px;
     }
     .result-box span img {
