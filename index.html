@@ -1493,7 +1493,7 @@ new Pokemon("Calyrex", "Psychic", "Grass", 8, "first", 1.1, 7.7, "https://raw.gi
     new Pokemon("Basculegion", "Water", "Ghost", 8, "first", 2.5, 110, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/902.png", 902),
     new Pokemon("Sneasler", "Fighting", "Poison", 8, "first", 1.4, 43, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/903.png", 903),
     new Pokemon("Overqwil", "Dark", "Poison", 8, "first", 1.0, 45, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/904.png", 904),
-    new Pokemon("Enamorus", "Fairy", "Flying", 8, "first", 1.2, 30, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/905.png", 905),
+    new Pokemon("Enamorus", "Fairy", "Flying", 8, "first", 1.2, 30, "https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/905.png", 905)
 ];
 
 
@@ -1597,150 +1597,72 @@ input.addEventListener("input", function () {
 
 
         function displayGuess(pokemon) {
-        let resultsContainer = document.getElementById("results");
-        let resultBox = document.createElement("div");
-        resultBox.classList.add("result-box");
+    let resultsContainer = document.getElementById("results");
+    let resultBox = document.createElement("div");
+    resultBox.classList.add("result-box");
 
-        function createSpan(content, isMatch, isClose, isWeakness, isGuessedWeakness) {
+    let img = document.createElement("img");
+    img.src = pokemon.image;
+    img.alt = pokemon.name;
+
+    let nameSpan = createSpan(pokemon.name, pokemon.name === answer.name, false);
+    let type1Span = createSpan(
+        getTypeImage(pokemon.type1),
+        pokemon.type1 === answer.type1 || pokemon.type1 === answer.type2,
+        false,
+        isWeakness(pokemon.type1, answer.type1) || isWeakness(pokemon.type1, answer.type2),
+        isWeakness(answer.type1, pokemon.type1) || isWeakness(answer.type2, pokemon.type1)
+    );
+    let type2Span = createSpan(
+        pokemon.type2 ? getTypeImage(pokemon.type2) : "-",
+        pokemon.type2 && (pokemon.type2 === answer.type1 || pokemon.type2 === answer.type2),
+        false,
+        pokemon.type2 && (isWeakness(pokemon.type2, answer.type1) || isWeakness(pokemon.type2, answer.type2)),
+        pokemon.type2 && (isWeakness(answer.type1, pokemon.type2) || isWeakness(answer.type2, pokemon.type2))
+    );
+    let genSpan = createSpan(
+        pokemon.gen,
+        pokemon.gen === answer.gen,
+        Math.abs(pokemon.gen - answer.gen) === 1
+    );
+    let evolutionSpan = createSpan(
+        pokemon.evolution,
+        pokemon.evolution === answer.evolution,
+        Math.abs(pokemon.evolution - answer.evolution) === 1
+    );
+    let heightSpan = createSpan(
+        pokemon.height + "m",
+        pokemon.height === answer.height,
+        Math.abs(pokemon.height - answer.height) <= 0.5
+    );
+    let weightSpan = createSpan(
+        pokemon.weight + "kg",
+        pokemon.weight === answer.weight,
+        Math.abs(pokemon.weight - answer.weight) <= 10
+    );
+
+    resultBox.appendChild(img);
+    resultBox.appendChild(nameSpan);
+    resultBox.appendChild(type1Span);
+    resultBox.appendChild(type2Span);
+    resultBox.appendChild(genSpan);
+    resultBox.appendChild(evolutionSpan);
+    resultBox.appendChild(heightSpan);
+    resultBox.appendChild(weightSpan);
+
+    resultsContainer.appendChild(resultBox);
+}
+
+function createSpan(content, isMatch, isClose, isWeakness, isGuessedWeakness) {
     let span = document.createElement("span");
 
-    // Check if the content is "Grass" and replace it with an image
-    if (content === "Grass") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/Pp1BK6m_bXUAAAAe/grass-type-pokemon-logo.png";
-        img.alt = "Grass Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
-    // Check if the content is "Fire" and replace it with an image
-    else if (content === "Fire") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/U3fdIlx3GdgAAAAe/fire-type-pokemon-logo.png";
-        img.alt = "Fire Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
-    else if (content === "Water") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/gd7g1xIIWQkAAAAe/water-type-pokemon-logo.png";
-        img.alt = "Water Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
-    else if (content === "Poison") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/OJwl2PdHFusAAAAe/poison-type-pokemon-logo.png";
-        img.alt = "Poison Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
-    else if (content === "Electric") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/EJaEf7Hya3wAAAAe/electric-type-pokemon-logo.png";
-        img.alt = "Electric Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Rock") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/7jzDB0jysK8AAAAe/rock-type-pokemon-logo.png";
-        img.alt = "Rock Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Ground") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/EkU93fMIYdIAAAAe/ground-type-pokemon-logo.png";
-        img.alt = "Ground Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Flying") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/dd-Vkm1c7CkAAAAe/flying-type-pokemon-logo.png";
-        img.alt = "Flying Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Bug") {
-        let img = document.createElement("img");
-        img.src = "https://media1.tenor.com/m/LOWHtxjlqi4AAAAC/bug-type-pokemon-logo.gif";
-        img.alt = "Bug Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Psychic") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/FwkVjBM7B-AAAAAe/psychic-type-pokemon-logo.png";
-        img.alt = "Psychic Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Ice") {
-        let img = document.createElement("img");
-        img.src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4aVVcArVS2GPvgXwAQxg5z80Fn3g_K_vyiA&s";
-        img.alt = "Ice Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Dragon") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/xS9BWAGgakAAAAAM/dragon-type-pokemon-logo.gif";
-        img.alt = "Dragon Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Dark") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/MhRcmqHS0_IAAAAe/dark-type-pokemon-logo.png";
-        img.alt = "Dark Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Steel") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/t8PuUW1QS6oAAAAe/steel-type-pokemon-logo.png";
-        img.alt = "Steel Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Fairy") {
-        let img = document.createElement("img");
-        img.src = "https://ih1.redbubble.net/image.2752227159.5298/raf,360x360,075,t,fafafa:ca443f4786.u1.jpg";
-        img.alt = "Fairy Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
- else if (content === "Ghost") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/EGnT-6IvSnEAAAAe/ghost-type-pokemon-logo.png"; // Placeholder image for Ghost type
-        img.alt = "Ghost Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    }
-    else if (content === "Fighting") {
-    let img = document.createElement("img");
-    img.src = "https://media.tenor.com/Cm4wXNb0glEAAAAM/fighting-type-pokemon-logo.gif"; // Replace with actual Fighting type logo URL
-    img.alt = "Fighting Type";
-    img.style.width = "80px";
-    img.style.height = "auto";
-    span.appendChild(img);
-}else if (content === "Normal") {
-    let img = document.createElement("img");
-    img.src = "https://media.tenor.com/D6K8HiuQs-QAAAAe/normal-type-pokemon-logo.png"; // Replace with actual Normal type logo URL
-    img.alt = "Normal Type";
-    img.style.width = "80px";
-    img.style.height = "auto";
-    span.appendChild(img);
-}else {
-        // Default case: display the text content
-        span.innerHTML = content;
+    if (typeof content === "string") {
+        span.textContent = content;
+    } else if (content instanceof HTMLElement) {
+        if (content.tagName === "IMG") {
+            content.classList.add("type-icon");
+        }
+        span.appendChild(content);
     }
 
     if (isMatch) {
@@ -1750,71 +1672,51 @@ input.addEventListener("input", function () {
     } else if (isWeakness) {
         span.classList.add("weakness-match");
     } else if (isClose) {
-        span.classList.add("close-match"); // Yellow box for close matches
+        span.classList.add("close-match");
     }
 
     return span;
 }
 
-        function isWeakness(type1, type2) {
-            return (
-                typeWeaknesses[type1] && typeWeaknesses[type1].includes(type2)
-            );
-        }
+function getTypeImage(type) {
+    const typeImages = {
+        Grass: "https://media.tenor.com/Pp1BK6m_bXUAAAAe/grass-type-pokemon-logo.png",
+        Fire: "https://media.tenor.com/U3fdIlx3GdgAAAAe/fire-type-pokemon-logo.png",
+        Water: "https://media.tenor.com/gd7g1xIIWQkAAAAe/water-type-pokemon-logo.png",
+        Poison: "https://media.tenor.com/OJwl2PdHFusAAAAe/poison-type-pokemon-logo.png",
+        Electric: "https://media.tenor.com/EJaEf7Hya3wAAAAe/electric-type-pokemon-logo.png",
+        Rock: "https://media.tenor.com/7jzDB0jysK8AAAAe/rock-type-pokemon-logo.png",
+        Ground: "https://media.tenor.com/EkU93fMIYdIAAAAe/ground-type-pokemon-logo.png",
+        Flying: "https://media.tenor.com/dd-Vkm1c7CkAAAAe/flying-type-pokemon-logo.png",
+        Bug: "https://media1.tenor.com/m/LOWHtxjlqi4AAAAC/bug-type-pokemon-logo.gif",
+        Psychic: "https://media.tenor.com/FwkVjBM7B-AAAAAe/psychic-type-pokemon-logo.png",
+        Ice: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4aVVcArVS2GPvgXwAQxg5z80Fn3g_K_vyiA&s",
+        Dragon: "https://media.tenor.com/xS9BWAGgakAAAAAM/dragon-type-pokemon-logo.gif",
+        Dark: "https://media.tenor.com/MhRcmqHS0_IAAAAe/dark-type-pokemon-logo.png",
+        Steel: "https://media.tenor.com/t8PuUW1QS6oAAAAe/steel-type-pokemon-logo.png",
+        Fairy: "https://ih1.redbubble.net/image.2752227159.5298/raf,360x360,075,t,fafafa:ca443f4786.u1.jpg",
+        Ghost: "https://media.tenor.com/EGnT-6IvSnEAAAAe/ghost-type-pokemon-logo.png",
+        Fighting: "https://media.tenor.com/Cm4wXNb0glEAAAAM/fighting-type-pokemon-logo.gif",
+        Normal: "https://media.tenor.com/D6K8HiuQs-QAAAAe/normal-type-pokemon-logo.png",
+    };
 
+    if (typeImages[type]) {
         let img = document.createElement("img");
-        img.src = pokemon.image;
-        img.alt = pokemon.name;
-
-        let nameSpan = createSpan(pokemon.name, pokemon.name === answer.name, false);
-        let type1Span = createSpan(
-            pokemon.type1,
-            pokemon.type1 === answer.type1 || pokemon.type1 === answer.type2,
-            false,
-            isWeakness(pokemon.type1, answer.type1) || isWeakness(pokemon.type1, answer.type2),
-            isWeakness(answer.type1, pokemon.type1) || isWeakness(answer.type2, pokemon.type1)
-        );
-        let type2Span = createSpan(
-            pokemon.type2 ? pokemon.type2 : "-",
-            pokemon.type2 && (pokemon.type2 === answer.type1 || pokemon.type2 === answer.type2),
-            false,
-            pokemon.type2 && (isWeakness(pokemon.type2, answer.type1) || isWeakness(pokemon.type2, answer.type2)),
-            pokemon.type2 && (isWeakness(answer.type1, pokemon.type2) || isWeakness(answer.type2, pokemon.type2))
-        );
-        let genSpan = createSpan(
-    pokemon.gen,
-    pokemon.gen === answer.gen,
-    Math.abs(pokemon.gen - answer.gen) === 1 // Highlight if within one generation
-);
-        let evolutionSpan = createSpan(
-    pokemon.evolution, 
-    pokemon.evolution === answer.evolution, 
-    Math.abs(pokemon.evolution - answer.evolution) === 1  // This will be true if evolution difference is 1
-);
-        let heightSpan = createSpan(
-            pokemon.height + "m",
-            pokemon.height === answer.height,
-            Math.abs(pokemon.height - answer.height) <= 0.5
-        );
-        let weightSpan = createSpan(
-            pokemon.weight + "kg",
-            pokemon.weight === answer.weight,
-            Math.abs(pokemon.weight - answer.weight) <= 10
-        );
-        
-
-        resultBox.appendChild(img);
-        resultBox.appendChild(nameSpan);
-        resultBox.appendChild(type1Span);
-        resultBox.appendChild(type2Span);
-        resultBox.appendChild(genSpan);
-        resultBox.appendChild(evolutionSpan);
-        resultBox.appendChild(heightSpan);
-        resultBox.appendChild(weightSpan);
-
-        resultsContainer.appendChild(resultBox);
+        img.src = typeImages[type];
+        img.alt = `${type} Type`;
+        img.style.width = "80px";
+        img.style.height = "auto";
+        return img;
     }
-    
+
+    return type; // Return the type as text if no image is found
+}
+
+function isWeakness(type1, type2) {
+    return (
+        typeWeaknesses[type1] && typeWeaknesses[type1].includes(type2)
+    );
+}
 
         function displayInitialHeaders() {
         let resultsContainer = document.getElementById("results");
