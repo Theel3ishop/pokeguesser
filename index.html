@@ -1642,141 +1642,35 @@ input.addEventListener("input", function () {
         function createSpan(content, isMatch, isClose, isWeakness, isGuessedWeakness) {
     let span = document.createElement("span");
 
-    // Check if the content is "Grass" and replace it with an image
-    if (content === "Grass") {
+    // Check if the content matches a type and replace it with an image
+    const typeImages = {
+        Grass: "https://media.tenor.com/Pp1BK6m_bXUAAAAe/grass-type-pokemon-logo.png",
+        Fire: "https://media.tenor.com/U3fdIlx3GdgAAAAe/fire-type-pokemon-logo.png",
+        Water: "https://media.tenor.com/gd7g1xIIWQkAAAAe/water-type-pokemon-logo.png",
+        Poison: "https://media.tenor.com/OJwl2PdHFusAAAAe/poison-type-pokemon-logo.png",
+        Electric: "https://media.tenor.com/EJaEf7Hya3wAAAAe/electric-type-pokemon-logo.png",
+        Rock: "https://media.tenor.com/7jzDB0jysK8AAAAe/rock-type-pokemon-logo.png",
+        Ground: "https://media.tenor.com/EkU93fMIYdIAAAAe/ground-type-pokemon-logo.png",
+        Flying: "https://media.tenor.com/dd-Vkm1c7CkAAAAe/flying-type-pokemon-logo.png",
+        Bug: "https://media1.tenor.com/m/LOWHtxjlqi4AAAAC/bug-type-pokemon-logo.gif",
+        Psychic: "https://media.tenor.com/FwkVjBM7B-AAAAAe/psychic-type-pokemon-logo.png",
+        Ice: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4aVVcArVS2GPvgXwAQxg5z80Fn3g_K_vyiA&s",
+        Dragon: "https://media.tenor.com/xS9BWAGgakAAAAAM/dragon-type-pokemon-logo.gif",
+        Dark: "https://media.tenor.com/MhRcmqHS0_IAAAAe/dark-type-pokemon-logo.png",
+        Steel: "https://media.tenor.com/t8PuUW1QS6oAAAAe/steel-type-pokemon-logo.png",
+        Fairy: "https://ih1.redbubble.net/image.2752227159.5298/raf,360x360,075,t,fafafa:ca443f4786.u1.jpg",
+        Ghost: "https://media.tenor.com/EGnT-6IvSnEAAAAe/ghost-type-pokemon-logo.png",
+        Fighting: "https://media.tenor.com/Cm4wXNb0glEAAAAM/fighting-type-pokemon-logo.gif",
+        Normal: "https://media.tenor.com/D6K8HiuQs-QAAAAe/normal-type-pokemon-logo.png",
+    };
+
+    if (typeImages[content]) {
         let img = document.createElement("img");
-        img.src = "https://media.tenor.com/Pp1BK6m_bXUAAAAe/grass-type-pokemon-logo.png";
-        img.alt = "Grass Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
+        img.src = typeImages[content];
+        img.alt = `${content} Type`;
+        img.classList.add("type-image"); // Add a CSS class for styling
         span.appendChild(img);
-    } 
-    // Check if the content is "Fire" and replace it with an image
-    else if (content === "Fire") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/U3fdIlx3GdgAAAAe/fire-type-pokemon-logo.png";
-        img.alt = "Fire Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
-    else if (content === "Water") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/gd7g1xIIWQkAAAAe/water-type-pokemon-logo.png";
-        img.alt = "Water Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
-    else if (content === "Poison") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/OJwl2PdHFusAAAAe/poison-type-pokemon-logo.png";
-        img.alt = "Poison Type";
-        img.style.width = "80px"; // Increased size
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
-    else if (content === "Electric") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/EJaEf7Hya3wAAAAe/electric-type-pokemon-logo.png";
-        img.alt = "Electric Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Rock") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/7jzDB0jysK8AAAAe/rock-type-pokemon-logo.png";
-        img.alt = "Rock Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Ground") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/EkU93fMIYdIAAAAe/ground-type-pokemon-logo.png";
-        img.alt = "Ground Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Flying") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/dd-Vkm1c7CkAAAAe/flying-type-pokemon-logo.png";
-        img.alt = "Flying Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Bug") {
-        let img = document.createElement("img");
-        img.src = "https://media1.tenor.com/m/LOWHtxjlqi4AAAAC/bug-type-pokemon-logo.gif";
-        img.alt = "Bug Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Psychic") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/FwkVjBM7B-AAAAAe/psychic-type-pokemon-logo.png";
-        img.alt = "Psychic Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Ice") {
-        let img = document.createElement("img");
-        img.src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4aVVcArVS2GPvgXwAQxg5z80Fn3g_K_vyiA&s";
-        img.alt = "Ice Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Dragon") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/xS9BWAGgakAAAAAM/dragon-type-pokemon-logo.gif";
-        img.alt = "Dragon Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Dark") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/MhRcmqHS0_IAAAAe/dark-type-pokemon-logo.png";
-        img.alt = "Dark Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Steel") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/t8PuUW1QS6oAAAAe/steel-type-pokemon-logo.png";
-        img.alt = "Steel Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } else if (content === "Fairy") {
-        let img = document.createElement("img");
-        img.src = "https://ih1.redbubble.net/image.2752227159.5298/raf,360x360,075,t,fafafa:ca443f4786.u1.jpg";
-        img.alt = "Fairy Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    } 
- else if (content === "Ghost") {
-        let img = document.createElement("img");
-        img.src = "https://media.tenor.com/EGnT-6IvSnEAAAAe/ghost-type-pokemon-logo.png"; // Placeholder image for Ghost type
-        img.alt = "Ghost Type";
-        img.style.width = "80px";
-        img.style.height = "auto";
-        span.appendChild(img);
-    }
-    else if (content === "Fighting") {
-    let img = document.createElement("img");
-    img.src = "https://media.tenor.com/Cm4wXNb0glEAAAAM/fighting-type-pokemon-logo.gif"; // Replace with actual Fighting type logo URL
-    img.alt = "Fighting Type";
-    img.style.width = "80px";
-    img.style.height = "auto";
-    span.appendChild(img);
-}else if (content === "Normal") {
-    let img = document.createElement("img");
-    img.src = "https://media.tenor.com/D6K8HiuQs-QAAAAe/normal-type-pokemon-logo.png"; // Replace with actual Normal type logo URL
-    img.alt = "Normal Type";
-    img.style.width = "80px";
-    img.style.height = "auto";
-    span.appendChild(img);
-}else {
+    } else {
         // Default case: display the text content
         span.innerHTML = content;
     }
