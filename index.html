@@ -433,9 +433,15 @@ h1 {
         flex-shrink: 0;
     }
 
+    /* Specifically target the 3rd and 4th images */
+    .result-box img:nth-of-type(3),
+    .result-box img:nth-of-type(4) {
+        width: 24px; /* Smaller size for problematic images */
+    }
+
     .result-box span {
         flex: 1;
-        min-width: 0; /* Prevent overflow */
+        min-width: 0;
         text-align: center;
         white-space: nowrap;
         overflow: hidden;
