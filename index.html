@@ -405,34 +405,44 @@ h1 {
 }
 @media (max-width: 400px) {
     .result-box {
-        display: flex;
-        flex-wrap: wrap; /* Allow wrapping to prevent overlap */
-        flex-direction: row;
-        justify-content: space-between; /* Distribute items evenly */
-        align-items: center;
-        padding: 5px;
-        gap: 5px; /* Add spacing between items */
-    }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #ddd;
+    padding: 10px;
+    width: 100%; /* Ensure it spans the full width */
+    max-width: 800px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow-x: auto; /* Allow horizontal scrolling if content overflows */
+    gap: 10px; /* Add spacing between items */
+}
 
-    .result-box img {
-        width: 40px; /* Adjust image size for smaller screens */
-        height: auto;
-        flex: 0 0 auto; /* Prevent images from stretching */
-    }
+.result-box img {
+    width: 50px; /* Fixed size for images */
+    height: auto;
+    flex-shrink: 0; /* Prevent images from shrinking */
+}
 
-    .result-box span {
-        flex: 1 1 20%; /* Allow spans to shrink and grow */
-        text-align: center;
-        font-size: 10px; /* Adjust font size for readability */
-        padding: 2px;
-        overflow: hidden; /* Prevent text overflow */
-        text-overflow: ellipsis; /* Add "..." for long text */
-        white-space: nowrap; /* Prevent text wrapping */
-    }
+.result-box span {
+    flex: 1; /* Ensure spans take equal space */
+    text-align: center;
+    padding: 5px;
+    white-space: nowrap; /* Prevent text from wrapping */
+    overflow: hidden; /* Prevent text overflow */
+    text-overflow: ellipsis; /* Add "..." for long text */
+    font-size: 12px; /* Adjust font size for readability */
+}
 
-    .result-box span:last-child {
-        border-right: none;
-    }
+.result-box span.name {
+    flex: 2; /* Give the name span more space */
+}
+
+.result-box span:last-child {
+    border-right: none;
+}
 
     .guide-box {
         font-size: 40px;
