@@ -440,7 +440,7 @@ h1 {
 }
 
 
-    .result-box span {
+.result-box span {
         flex: 1;
         min-width: 0;
         text-align: center;
@@ -449,6 +449,9 @@ h1 {
         text-overflow: ellipsis;
         font-size: 5px;
         padding: 1px;
+        display: flex; /* Use flexbox for centering */
+        align-items: center; /* Vertically center content */
+        justify-content: center; /* Horizontally center content */
     }
 
     .result-box span.name {
