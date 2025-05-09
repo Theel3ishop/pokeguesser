@@ -457,7 +457,10 @@ h1 {
     }
 
     .result-box span.name {
-        flex: 2;
+        flex: 3; /* Increase the flex value to give more space */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .guide-box {
