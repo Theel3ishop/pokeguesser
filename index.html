@@ -447,6 +447,7 @@ h1 {
         min-width: 0;
         text-align: center;
         white-space: nowrap;
+        overflow: hidden;
         text-overflow: ellipsis;
         font-size: 5px;
         padding: 3px;
@@ -454,10 +455,20 @@ h1 {
         align-items: center; /* Vertically center content */
         justify-content: center; /* Horizontally center content */
     }
+    .guide-box span:nth-child(6), /* Adjust the "Gen" column in the guide box */
+    .result-box span:nth-child(5) { /* Adjust the "Gen" data in the result box */
+        flex: 0.5; /* Reduce the flex value to take up less space */
+        font-size: 8px; /* Reduce the font size for smaller screens */
+        min-width: 30px; /* Set a smaller minimum width */
+        text-overflow: ellipsis; /* Add ellipsis if the text overflows */
+        overflow: hidden; /* Prevent text overflow */
+        white-space: nowrap; /* Prevent text wrapping */
+    }
 
     .result-box span.name {
         flex: 3; /* Increase the flex value to give more space */
         white-space: nowrap;
+        overflow: hidden;
         text-overflow: ellipsis;
     }
 
