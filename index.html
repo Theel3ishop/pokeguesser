@@ -1788,10 +1788,11 @@ input.addEventListener("input", function () {
 
         // Populate suggestions and display initial headers on page load
         window.onload = function() {
-            getTodaysPokemon();
-            populateSuggestions();
-            displayInitialHeaders();
-        };
+    getTodaysPokemon();
+    populateSuggestions();
+    displayInitialHeaders();
+    showOverlay("rulesOverlay"); // Show the rules overlay on page load
+};
         function showOverlay(overlayId) {
         document.getElementById(overlayId).style.display = "flex";
     }
