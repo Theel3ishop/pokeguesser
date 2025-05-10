@@ -1788,6 +1788,7 @@ input.addEventListener("input", function () {
 
         // Populate suggestions and display initial headers on page load
         window.onload = function() {
+            showOverlay("rulesOverlay"); // Show the rules overlay on page load
     getTodaysPokemon();
     populateSuggestions();
     displayInitialHeaders();
