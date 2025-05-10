@@ -1616,7 +1616,12 @@ input.addEventListener("input", function () {
 });
         
 
-    function makeGuess() {
+function makeGuess() {
+    if (guesses >= maxGuesses) {
+        alert("You have reached the maximum number of guesses!");
+        return;
+    }
+
     let guessInput = document.getElementById("guessInput").value.trim().toLowerCase();
     let guessedPokemon = pokemonList.find(p => p.name.toLowerCase() === guessInput);
 
@@ -1633,7 +1638,7 @@ input.addEventListener("input", function () {
     document.getElementById("guessTracker").innerText = `Guesses Left: ${guessesLeft}`;
 
     const resultImage = document.getElementById("resultImage");
-    
+
     if (guessedPokemon.name === answer.name) {
         document.getElementById("endgameMessage").innerText = "Congratulations! You guessed the correct Pokémon!";
         document.getElementById("correctPokemon").innerHTML = `The correct Pokémon was <strong>${answer.name}</strong>.`;
